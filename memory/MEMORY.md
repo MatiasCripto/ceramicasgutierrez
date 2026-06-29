@@ -1,0 +1,1 @@
+- [Idioma español](feedback_language.md) — Todas las respuestas deben ser en español

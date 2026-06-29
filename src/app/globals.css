@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-warm-ivory: #F5F1EB;
+  --color-sand-beige: #D8C9B6;
+  --color-taupe: #B7A28E;
+  --color-stone-gray: #8A8178;
+  --color-charcoal-soft: #2E2A27;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in-left {
+  from { opacity: 0; transform: translateX(48px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fade-in-right {
+  from { opacity: 0; transform: translateX(-48px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.animate-fade-in-down {
+  animation: fade-in-down 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.animate-fade-in-left {
+  animation: fade-in-left 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.animate-fade-in-right {
+  animation: fade-in-right 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
