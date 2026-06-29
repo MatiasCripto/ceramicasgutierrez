@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/service'
 import { requireOrgAccess } from '@/lib/auth/require-org'
 import {
   ensureInstance,
@@ -12,22 +11,9 @@ import {
 export async function GET(req: NextRequest) {
   const auth = await requireOrgAccess(req)
   if (!auth.authorized) return auth.response
-  const orgId = auth.orgId
 
   const instanceName = process.env.EVOLUTION_INSTANCE || 'concierge-wpp'
-  const webhookUrl = `http://host.docker.internal:3010/api/webhooks/whatsapp`
-
-  // Verify the instance belongs to a store in the authenticated org
-  const sb = createServiceClient()
-  const { data: store } = await sb.from('stores')
-    .select('id')
-    .eq('organization_id', orgId)
-    .eq('evolution_instance', instanceName)
-    .maybeSingle()
-  if (!store) {
-    console.warn('[EVO CONNECT] instance not found for org:', orgId, 'instance:', instanceName)
-    return NextResponse.json({ error: 'Instancia no encontrada para esta organización' }, { status: 403 })
-  }
+  const webhookUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}/api/webhooks/whatsapp`
 
   try {
     // 1) Try normal flow — create if missing, return QR
