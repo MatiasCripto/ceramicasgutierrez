@@ -59,11 +59,11 @@ export async function getConnectionState(instanceName: string): Promise<Instance
   return data?.instance ?? null
 }
 
-/** Get QR code as base64 data URL. */
+/** Get QR code as base64 data URL (uses the connect endpoint which returns the current QR). */
 export async function getQrCode(instanceName: string): Promise<string | null> {
   try {
-    const data = await fetchApi(`/instance/qrcode/${instanceName}?base64=true`)
-    const base64 = data?.base64 ?? data?.qrcode?.base64 ?? null
+    const data = await fetchApi(`/instance/connect/${instanceName}`)
+    const base64 = data?.base64 ?? null
     if (typeof base64 === 'string') return base64
     return null
   } catch {

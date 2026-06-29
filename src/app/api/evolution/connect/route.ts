@@ -5,7 +5,6 @@ import {
   getQrCode,
   deleteInstance,
   createInstance,
-  fetchInstances,
 } from '@/lib/evolution/evolution-api'
 
 export async function GET(req: NextRequest) {
@@ -29,23 +28,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ connected: true })
     }
 
-    // 2) Try standalone QR endpoint (works on some versions)
+    // 2) Try standalone QR endpoint
     const qr = await getQrCode(instanceName)
     if (qr) {
       return NextResponse.json({ base64: qr, state: 'connecting' })
     }
 
-    // 3) Only recreate if instance is actually dead/disconnected
-    if (currentState === 'close') {
-      await deleteInstance(instanceName)
-      await new Promise(r => setTimeout(r, 1000))
-      const createRes = await createInstance(instanceName, webhookUrl)
-      const freshQr = createRes?.qrcode?.base64 ?? null
-      return NextResponse.json({ base64: freshQr, state: 'connecting' })
-    }
-
-    // Still connecting — leave it alone, dashboard keeps the existing QR
-    return NextResponse.json({ base64: null, state: 'connecting' })
+    // 3) No QR available and not open — delete and recreate to get a fresh QR
+    //    This handles: close, connecting, disconnected, and stale instances
+    console.log('[EVO CONNECT] recreating instance, current state:', currentState)
+    await deleteInstance(instanceName)
+    await new Promise(r => setTimeout(r, 1000))
+    const createRes = await createInstance(instanceName, webhookUrl)
+    const freshQr = createRes?.qrcode?.base64 ?? null
+    return NextResponse.json({ base64: freshQr, state: 'connecting' })
   } catch (err) {
     console.error('[EVO CONNECT]', err)
     return NextResponse.json({ error: 'Error al conectar con Evolution API' }, { status: 500 })
