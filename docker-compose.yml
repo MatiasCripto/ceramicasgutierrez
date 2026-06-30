@@ -33,7 +33,7 @@ services:
       DATABASE_PROVIDER: "postgresql"
       DATABASE_CONNECTION_URI: "postgresql://evolution:evolution_pass@postgres:5432/evolution"
       CACHE_REDIS_URI: "redis://redis:6379"
-      WEBHOOK_URL: "https://ceramicasgutierrezz.vercel.app/api/webhooks/whatsapp"
+      WEBHOOK_URL: "http://host.docker.internal:3000/api/webhooks/whatsapp"
       WEBHOOK_ENABLED: "true"
       WEBHOOK_EVENTS: "MESSAGES_UPSERT,MESSAGES_UPDATE,CONNECTION_UPDATE"
       LOG_LEVEL: "info"

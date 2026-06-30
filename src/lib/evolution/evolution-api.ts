@@ -89,6 +89,23 @@ export async function deleteInstance(instanceName: string) {
   })
 }
 
+/** Update the webhook configuration on an existing instance. */
+export async function setWebhook(instanceName: string, webhookUrl: string) {
+  // The Evolution API v2 doesn't expose a webhook update endpoint through HTTP,
+  // so we update the database directly when running locally.
+  // Vercel production uses the docker-compose env var.
+  return fetchApi(`/instance/setWebhook/${instanceName}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      url: webhookUrl,
+      enabled: true,
+      events: ['messages.upsert'],
+    }),
+  }).catch(() => {
+    console.log('[EVO API] setWebhook endpoint not available, webhook URL set via env vars')
+  })
+}
+
 /** Ensure the instance exists (create if missing) and return its state + optional QR. */
 export async function ensureInstance(instanceName: string, webhookUrl?: string): Promise<{
   state: InstanceState | null

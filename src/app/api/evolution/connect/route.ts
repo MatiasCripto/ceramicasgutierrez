@@ -6,14 +6,17 @@ import {
   deleteInstance,
   createInstance,
   fetchInstances,
+  setWebhook,
 } from '@/lib/evolution/evolution-api'
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req)
   if (!auth.authorized) return auth.response
 
-  const instanceName = process.env.EVOLUTION_INSTANCE || 'concierge-wpp'
-  const webhookUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}/api/webhooks/whatsapp`
+  const instanceName = process.env.EVOLUTION_INSTANCE || 'ceramicas-gutierrez'
+  const webhookHost = process.env.WEBHOOK_BASE_URL || req.nextUrl.host
+  const protocol = webhookHost.includes('host.docker.internal') || webhookHost.startsWith('localhost') ? 'http' : req.nextUrl.protocol.replace(':', '')
+  const webhookUrl = `${protocol}://${webhookHost}/api/webhooks/whatsapp`
 
   try {
     // 1) First check if instance already exists in Evolution API
@@ -35,6 +38,9 @@ export async function GET(req: NextRequest) {
       }
       return NextResponse.json({ state: 'connecting' })
     }
+
+    // Ensure webhook URL is up to date for existing instances
+    await setWebhook(instanceName, webhookUrl)
 
     // 2) Instance exists — check state
     const result = await ensureInstance(instanceName, webhookUrl)
