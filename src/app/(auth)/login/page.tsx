@@ -33,7 +33,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm card p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--brand)' }}>Concierge AI</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--brand)' }}>Cerámicas Gutiérrez</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Iniciar sesión</p>
         </div>
 
@@ -74,18 +74,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t text-center" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={() => {
-              if (typeof window !== 'undefined') localStorage.setItem('ca-dev-mode', 'true')
-              window.location.href = '/dashboard'
-            }}
-            className="text-xs font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--subtle)' }}
-          >
-            Modo Desarrollo (sin Supabase)
-          </button>
-        </div>
       </div>
     </div>
   )
