@@ -1,19 +1,5 @@
 import React from 'react'
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
-
-Font.register({
-  family: 'Inter',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2',
-      fontWeight: 700,
-    },
-  ],
-})
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -60,7 +46,6 @@ const styles = StyleSheet.create({
   page: {
     padding: 40,
     paddingBottom: 60,
-    fontFamily: 'Inter',
     fontSize: 10,
     color: NEGRO_TEXTO,
   },
