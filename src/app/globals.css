@@ -13,18 +13,58 @@
 
 /* ── Dashboard theme ──────────────────────────────────────────── */
 :root {
-  --brand: #b8860b;
-  --brand-hover: #a0750a;
+  /* ── Brand (legacy, being migrated to --dash-*) ──────── */
+  --brand: #F5C200;
+  --brand-hover: #DBA900;
+  --brand-subtle: #FEF7D6;
   --foreground: #1a1a1a;
   --muted: #6b7280;
   --subtle: #9ca3af;
   --border: #e5e7eb;
-  --surface-2: #f3f4f6;
+  --surface: #ffffff;
+  --surface-2: #f8f7f4;
+  --surface-3: #f0efe9;
   --danger: #dc2626;
   --danger-bg: #fef2f2;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --info: #2563eb;
+  --info-bg: #eff6ff;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 9999px;
+
+  /* ── Dashboard design system (v2) ─────────────────── */
+  --dash-bg:              #F8F7F4;
+  --dash-sidebar:         #111111;
+  --dash-sidebar-hover:   #1A1A1A;
+  --dash-card:            #FFFFFF;
+  --dash-card-border:     #E8E6E1;
+  --dash-input-bg:        #FFFFFF;
+  --dash-input-border:    #D1CEC8;
+  --dash-input-focus:     #F5C200;
+  --dash-row-hover:       #F3F2EE;
+  --dash-text-primary:    #111111;
+  --dash-text-secondary:  #555550;
+  --dash-text-muted:      #888880;
+  --dash-text-sidebar:    #CCCCCC;
+  --dash-text-sidebar-active: #F5C200;
+  --dash-placeholder:     #AAAAAA;
+  --dash-gold:            #F5C200;
+  --dash-gold-hover:      #DBA900;
+  --dash-gold-subtle:     #FEF7D6;
+  --dash-gold-border:     #F0D060;
+
+  /* ── Dark dashboard theme (overview) ──────────────── */
+  --dash-dark-bg:          #0D0D0D;
+  --dash-dark-card:        #1A1A1A;
+  --dash-dark-border:      #2A2A2A;
+  --dash-dark-text:        #F0F0F0;
+  --dash-dark-muted:       #888880;
+  --dash-dark-hover:       #222222;
+  --dash-dark-grid:        #2A2A2A;
 }
 
 .dark {
@@ -32,14 +72,47 @@
   --muted: #9ca3af;
   --subtle: #6b7280;
   --border: #374151;
+  --surface: #111827;
   --surface-2: #1f2937;
+  --surface-3: #1e293b;
+  --brand-subtle: #292524;
+  --danger-bg: #450a0a;
+  --success-bg: #052e16;
+  --warning-bg: #451a03;
+  --info-bg: #172554;
 }
 
 /* ── Dashboard shared classes ─────────────────────────────────── */
 .card {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+}
+
+.hover-nav:hover {
+  background: var(--surface-2) !important;
+  color: var(--foreground) !important;
+}
+
+/* ── Dashboard input shared styles ───────────────────── */
+.dash-input {
+  background: var(--dash-input-bg);
+  border: 1px solid var(--dash-input-border);
+  color: var(--dash-text-primary);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dash-input:focus {
+  border-color: var(--dash-input-focus);
+  box-shadow: 0 0 0 3px rgba(245, 194, 0, 0.15);
+}
+
+.dash-label {
+  color: var(--dash-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
 }
 
 @keyframes fade-in-up {

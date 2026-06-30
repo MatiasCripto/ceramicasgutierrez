@@ -145,75 +145,75 @@ export default function EditProductPage() {
   }
 
   if (loading) {
-    return <div className="text-sm text-gray-500">Cargando...</div>
+    return <div className="text-sm" style={{color: 'var(--dash-text-secondary)'}}>Cargando...</div>
   }
 
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard/products" className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+        <Link href="/dashboard/products" className="p-2 rounded-lg hover:bg-[var(--dash-row-hover)] transition-colors" style={{color: 'var(--dash-text-secondary)'}}>
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h2 className="text-2xl font-bold text-gray-900">Editar Producto</h2>
+        <h2 className="text-2xl font-bold" style={{color: 'var(--dash-text-primary)'}}>Editar Producto</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="rounded-[var(--dash-radius-lg)] p-6 space-y-5" style={{background: 'var(--dash-card)', border: '1px solid var(--dash-card-border)'}}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Nombre *</label>
           <input type="text" required value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Descripción</label>
           <textarea value={form.description} rows={3}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none resize-none" style={{borderColor: 'var(--dash-input-border)'}}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Categoría</label>
             <select value={form.category}
               onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             >
               <option value="">Seleccionar</option>
               {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Marca</label>
             <input type="text" value={form.brand}
               onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Medida</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Medida</label>
             <input type="text" value={form.size} placeholder="60x60"
               onChange={e => setForm(f => ({ ...f, size: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Color</label>
             <input type="text" value={form.color}
               onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Terminación</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Terminación</label>
             <select value={form.finish}
               onChange={e => setForm(f => ({ ...f, finish: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             >
               <option value="">—</option>
               {FINISHES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
@@ -223,61 +223,61 @@ export default function EditProductPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio por m² ($)</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio por m² ($)</label>
             <input type="number" min={0} step="0.01" value={form.price_per_m2}
               onChange={e => setForm(f => ({ ...f, price_per_m2: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio por unidad ($)</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio por unidad ($)</label>
             <input type="number" min={0} step="0.01" value={form.price_per_unit}
               onChange={e => setForm(f => ({ ...f, price_per_unit: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">m² por caja</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>m² por caja</label>
             <input type="number" min={0} step="0.01" value={form.m2_per_box}
               onChange={e => setForm(f => ({ ...f, m2_per_box: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stock (m²)</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Stock (m²)</label>
             <input type="number" min={0} step="0.01" value={form.stock_m2}
               onChange={e => setForm(f => ({ ...f, stock_m2: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stock (unidades)</label>
+            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Stock (unidades)</label>
             <input type="number" min={0} step="1" value={form.stock_units}
               onChange={e => setForm(f => ({ ...f, stock_units: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Atributos <span className="text-gray-400 font-normal">(separados por coma)</span>
+          <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>
+            Atributos <span className="font-normal" style={{color: 'var(--dash-text-muted)'}}>(separados por coma)</span>
           </label>
           <input type="text" value={form.attributes}
             onChange={e => setForm(f => ({ ...f, attributes: e.target.value }))}
             placeholder="antideslizante, alto tránsito, interior"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes</label>
+          <label className="block text-sm font-medium mb-2" style={{color: 'var(--dash-text-primary)'}}>Imágenes</label>
           <div className="flex flex-wrap gap-3">
             {imageUrls.map((url, i) => (
-              <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+              <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border" style={{borderColor: 'var(--dash-card-border)'}}>
                 <img src={url} alt="" className="w-full h-full object-cover" />
                 <button type="button" onClick={() => removeImage(i)}
                   className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/50 text-white hover:bg-black/70">
@@ -285,7 +285,7 @@ export default function EditProductPage() {
                 </button>
               </div>
             ))}
-            <label className="flex items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors text-gray-400">
+            <label className="flex items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed cursor-pointer hover:bg-[var(--dash-row-hover)] transition-colors" style={{borderColor: 'var(--dash-input-border)', color: 'var(--dash-text-muted)'}}>
               {uploading ? (
                 <span className="text-xs">Subiendo...</span>
               ) : (
@@ -301,14 +301,14 @@ export default function EditProductPage() {
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input type="checkbox" checked={form.active}
               onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded" style={{borderColor: 'var(--dash-input-border)', color: 'var(--dash-gold)'}}
             />
             Activo
           </label>
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input type="checkbox" checked={form.featured_on_landing}
               onChange={e => setForm(f => ({ ...f, featured_on_landing: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded" style={{borderColor: 'var(--dash-input-border)', color: 'var(--dash-gold)'}}
             />
             Destacado en landing
           </label>
@@ -316,12 +316,12 @@ export default function EditProductPage() {
 
         <div className="pt-2 flex gap-3">
           <button type="submit" disabled={saving}
-            className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 bg-[var(--dash-gold)] text-sm font-medium rounded-lg hover:bg-[var(--dash-gold-hover)] transition-colors disabled:opacity-50" style={{color: '#111111'}}
           >
             {saving ? 'Guardando...' : 'Guardar Cambios'}
           </button>
           <Link href="/dashboard/products"
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-6 py-2.5 border text-sm font-medium rounded-lg hover:bg-[var(--dash-row-hover)] transition-colors" style={{borderColor: 'var(--dash-input-border)', color: 'var(--dash-text-primary)'}}
           >
             Cancelar
           </Link>

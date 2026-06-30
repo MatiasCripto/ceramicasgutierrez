@@ -23,11 +23,16 @@ export default function WhatsAppPage() {
     try {
       const res = await fetch('/api/evolution/connect')
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || `Error ${res.status} al conectar`)
+        return null
+      }
       if (data.base64) {
         setQrBase64(data.base64)
       }
       return data
-    } catch {
+    } catch (err) {
+      setError('Error de red al conectar con Evolution API: ' + String(err))
       return null
     }
   }, [])
@@ -35,11 +40,18 @@ export default function WhatsAppPage() {
   const fetchStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/evolution/status')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || `Error ${res.status} al verificar estado`)
+        setState('close')
+        return 'close'
+      }
       const data = await res.json()
       const instanceState = data?.instance?.state ?? 'close'
       setState(instanceState as ConnectionState)
       return instanceState
-    } catch {
+    } catch (err) {
+      setError('Error de red al verificar estado: ' + String(err))
       setState('close')
       return 'close'
     }

@@ -98,7 +98,7 @@ export default function PaymentsSettingsPage() {
     return (
       <div className="space-y-6 animate-fade-in max-w-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <a href="/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          <a href="/dashboard/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
             General
           </a>
@@ -106,10 +106,15 @@ export default function PaymentsSettingsPage() {
             style={{ background: 'var(--brand)' }}>
             Pagos
           </span>
-          <a href="/settings/agent"
+          <a href="/dashboard/settings/agent"
             className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
             Agente
+          </a>
+          <a href="/dashboard/settings/billing"
+            className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+            style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
+            Facturación
           </a>
         </div>
         <div className="text-sm" style={{ color: 'var(--muted)' }}>Cargando...</div>
@@ -121,7 +126,7 @@ export default function PaymentsSettingsPage() {
     <div className="space-y-6 animate-fade-in max-w-2xl">
       {/* Sub-nav */}
       <div className="flex items-center gap-2 mb-2">
-        <a href="/settings"
+        <a href="/dashboard/settings"
           className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
           style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
           General
@@ -130,6 +135,11 @@ export default function PaymentsSettingsPage() {
           style={{ background: 'var(--brand)' }}>
           Pagos
         </span>
+        <a href="/dashboard/settings/billing"
+          className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
+          Facturación
+        </a>
       </div>
 
       <div className="flex items-center gap-3">

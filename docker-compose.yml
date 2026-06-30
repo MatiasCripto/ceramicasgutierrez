@@ -40,6 +40,9 @@ services:
       LANGUAGE: "pt-BR"
       CONFIG_SESSION_PHONE_CLIENT: "Evolution API"
       CONFIG_SESSION_PHONE_NAME: "Ceramicas Gutierrez"
+    volumes:
+      - evolution_data:/evolution/instances
 
 volumes:
   pgdata:
+  evolution_data:

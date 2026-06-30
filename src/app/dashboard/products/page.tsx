@@ -29,80 +29,82 @@ export default async function ProductsPage() {
   const rows = (products ?? []) as ProductRow[]
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Productos</h2>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>Productos</h1>
         <Link
           href="/dashboard/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] text-white text-sm font-medium transition-all hover:opacity-90"
+          style={{ background: 'var(--brand)' }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus size={16} />
           Nuevo Producto
         </Link>
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">No hay productos todavía. ¡Creá el primero!</p>
+        <div className="card p-12 text-center">
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>No hay productos todavía. ¡Creá el primero!</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Producto</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Categoría</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Medida</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Color</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Terminación</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">$ / m²</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Stock m²</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Destacado</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
+              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
+                <th className="text-left px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Producto</th>
+                <th className="text-left px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Categoría</th>
+                <th className="text-left px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Medida</th>
+                <th className="text-left px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Color</th>
+                <th className="text-left px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Terminación</th>
+                <th className="text-right px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>$ / m²</th>
+                <th className="text-right px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Stock m²</th>
+                <th className="text-center px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Destacado</th>
+                <th className="text-right px-4 py-3 font-medium text-xs" style={{ color: 'var(--muted)' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((product) => (
-                <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <tr key={product.id} className="transition-colors" style={{ borderBottom: '1px solid var(--border)' }}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                      <div className="w-10 h-10 rounded-[var(--radius-md)] overflow-hidden flex-shrink-0" style={{ background: 'var(--surface-2)' }}>
                         {product.images?.[0] ? (
                           <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">—</div>
+                          <div className="w-full h-full flex items-center justify-center text-xs" style={{ color: 'var(--subtle)' }}>—</div>
                         )}
                       </div>
-                      <span className={`font-medium ${product.active ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
+                      <span className="font-medium" style={{ color: product.active ? 'var(--foreground)' : 'var(--subtle)', textDecoration: product.active ? 'none' : 'line-through' }}>
                         {product.name}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 capitalize">{product.category ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{product.size ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{product.color ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600 capitalize">{product.finish ?? '—'}</td>
-                  <td className="px-4 py-3 text-right text-gray-900 font-medium">
+                  <td className="px-4 py-3 capitalize" style={{ color: 'var(--muted)' }}>{product.category ?? '—'}</td>
+                  <td className="px-4 py-3" style={{ color: 'var(--muted)' }}>{product.size ?? '—'}</td>
+                  <td className="px-4 py-3" style={{ color: 'var(--muted)' }}>{product.color ?? '—'}</td>
+                  <td className="px-4 py-3 capitalize" style={{ color: 'var(--muted)' }}>{product.finish ?? '—'}</td>
+                  <td className="px-4 py-3 text-right font-medium" style={{ color: 'var(--foreground)' }}>
                     {product.price_per_m2 ? formatCurrency(product.price_per_m2) : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className={`font-medium ${(product.stock_m2 ?? 0) <= 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                    <span className="font-medium" style={{ color: (product.stock_m2 ?? 0) <= 0 ? 'var(--danger)' : 'var(--foreground)' }}>
                       {product.stock_m2 != null ? `${product.stock_m2} m²` : '—'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     {product.featured_on_landing ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
                         Sí
                       </span>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span style={{ color: 'var(--subtle)' }}>—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/dashboard/products/${product.id}/edit`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="text-sm font-medium transition-opacity hover:opacity-70"
+                      style={{ color: 'var(--brand)' }}
                     >
                       Editar
                     </Link>

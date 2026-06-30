@@ -6,6 +6,9 @@ const API_KEY = process.env.EVOLUTION_API_KEY || ''
 
 async function fetchApi(path: string, options: RequestInit = {}) {
   const url = `${BASE_URL}${path}`
+  console.log(`[EVO FETCH] REQUEST: ${options.method || 'GET'} ${url}`)
+  console.log(`[EVO FETCH] apikey header: "${API_KEY.slice(0, 8)}..." (length: ${API_KEY.length})`)
+  if (options.body) console.log(`[EVO FETCH] body: ${options.body}`)
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -14,11 +17,11 @@ async function fetchApi(path: string, options: RequestInit = {}) {
       ...(options.headers as Record<string, string> ?? {}),
     },
   })
+  const text = await res.text().catch(() => '')
+  console.log(`[EVO FETCH] RESPONSE [${res.status}]: ${text.slice(0, 500)}`)
   if (!res.ok) {
-    const text = await res.text().catch(() => '')
     throw new Error(`Evolution API error (${res.status}): ${text.slice(0, 300)}`)
   }
-  const text = await res.text()
   if (!text) return null
   return JSON.parse(text)
 }
@@ -66,7 +69,8 @@ export async function getQrCode(instanceName: string): Promise<string | null> {
     const base64 = data?.base64 ?? null
     if (typeof base64 === 'string') return base64
     return null
-  } catch {
+  } catch (err) {
+    console.error('[EVO API] getQrCode error:', err instanceof Error ? err.message : String(err))
     return null
   }
 }

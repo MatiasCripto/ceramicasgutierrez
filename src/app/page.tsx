@@ -3,8 +3,11 @@ import NavBar from '@/components/NavBar'
 import FloatingWhatsApp from '@/components/FloatingWhatsApp'
 import AnimatedSection from '@/components/AnimatedSection'
 import MetrosCalculator from '@/components/MetrosCalculator'
+import BundlesSection from '@/components/BundlesSection'
+import LocationSectionLoader from '@/components/LocationSectionLoader'
 import ScrollStory from '@/components/ScrollStory'
 import ScrollIndicator from '@/components/ScrollIndicator'
+import ValueIcon from '@/components/ValueIcon'
 import { formatCurrency } from '@/lib/utils/formatters'
 
 interface FeaturedProduct {
@@ -23,40 +26,16 @@ interface FeaturedProduct {
 
 const trustPillars = [
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M5 13l4 4L19 7" />
-      </svg>
-    ),
-    title: 'Stock permanente',
-    description: 'Disponibilidad inmediata en showroom',
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
     title: 'Atención personalizada',
-    description: 'Asesoría profesional en cada proyecto',
+    description: 'Asesoramiento one-to-one para encontrar la superficie ideal para cada proyecto.',
   },
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    title: 'Entrega rápida',
-    description: 'Logística propia en la zona',
+    title: 'Variedad',
+    description: 'Cerámicas, porcelanatos, revestimientos y más — una amplia gama de estilos y formatos para cada espacio.',
   },
   {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    ),
-    title: 'Amplia variedad',
-    description: '+200 diseños en exposición',
+    title: 'Calidad',
+    description: 'Trabajamos con primeras marcas y materiales seleccionados que garantizan durabilidad y terminaciones impecables.',
   },
 ]
 
@@ -238,6 +217,12 @@ export default async function LandingPage() {
         </a>
       </section>
 
+      {/* ===== COMBOS ===== */}
+      <BundlesSection />
+
+      {/* ===== LOCALES ===== */}
+      <LocationSectionLoader />
+
       {/* ===== CONFIANZA ===== */}
       <section className="py-24 px-6 bg-sand-beige/30" id="confianza">
         <div className="max-w-5xl mx-auto">
@@ -245,23 +230,26 @@ export default async function LandingPage() {
             <h2 className="font-serif text-3xl md:text-4xl text-charcoal-soft tracking-[0.03em] text-center mb-3">
               Un referente en la zona
             </h2>
-            <p className="text-stone-gray text-sm md:text-base text-center max-w-lg mx-auto mb-2 font-light">
-              Showroom en Gutiérrez, Berazategui — Buenos Aires
-            </p>
-            <p className="text-xs tracking-[0.12em] uppercase text-stone-gray/60 text-center mb-16 font-light">
-              Desde Gutiérrez, acompañando proyectos y espacios
+            <p className="text-stone-gray text-sm md:text-base text-center max-w-xl mx-auto mb-12 font-light leading-relaxed">
+              Nos renovamos constantemente para estar a la vanguardia. Amplia variedad de
+              productos para transformar tus espacios — con calidad garantizada y años de
+              trayectoria que nos respaldan.
             </p>
           </AnimatedSection>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {trustPillars.map((pillar, i) => (
-              <AnimatedSection key={pillar.title} delay={i * 0.1} direction="up">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            {[
+              { img: '/atencion-personalizada.png', title: trustPillars[0].title, desc: trustPillars[0].description },
+              { img: '/variedad.png', title: trustPillars[1].title, desc: trustPillars[1].description },
+              { img: '/calidad.png', title: trustPillars[2].title, desc: trustPillars[2].description },
+            ].map((item, i) => (
+              <AnimatedSection key={item.title} delay={i * 0.1} direction="up">
                 <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-charcoal-soft/5 flex items-center justify-center mx-auto mb-4 text-charcoal-soft/60">
-                    {pillar.icon}
+                  <div className="w-[120px] h-[120px] rounded-xl bg-charcoal-soft/5 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                    <ValueIcon src={item.img} title={item.title} />
                   </div>
-                  <h3 className="text-sm font-medium text-charcoal-soft mb-1.5">{pillar.title}</h3>
-                  <p className="text-xs text-stone-gray/70 font-light leading-relaxed">{pillar.description}</p>
+                  <h3 className="text-sm font-medium text-charcoal-soft mb-1.5">{item.title}</h3>
+                  <p className="text-xs text-stone-gray/70 font-light leading-relaxed">{item.desc}</p>
                 </div>
               </AnimatedSection>
             ))}

@@ -95,49 +95,49 @@ export default function NewComboPage() {
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard/combos" className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+        <Link href="/dashboard/combos" className="p-2 rounded-lg transition-colors" style={{color: 'var(--dash-text-secondary)'}}>
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <h2 className="text-2xl font-bold text-gray-900">Nuevo Combo</h2>
+        <h2 className="text-2xl font-bold" style={{color: 'var(--dash-text-primary)'}}>Nuevo Combo</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="rounded-[var(--dash-radius-lg)] p-6 space-y-5" style={{background: 'var(--dash-card)', border: '1px solid var(--dash-card-border)'}}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Combo *</label>
+          <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Nombre del Combo *</label>
           <input type="text" required value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             placeholder="Ej: Combo Porcelanato Gris + Pegamento"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Precio del Combo ($) *</label>
+          <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio del Combo ($) *</label>
           <input type="number" required min={0} step="0.01" value={form.bundle_price}
             onChange={e => setForm(f => ({ ...f, bundle_price: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 max-w-[200px]"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none max-w-[200px]" style={{borderColor: 'var(--dash-input-border)'}}
           />
         </div>
 
         {/* Products */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">Productos</label>
+            <label className="text-sm font-medium" style={{color: 'var(--dash-text-primary)'}}>Productos</label>
             <button type="button" onClick={addItem}
-              className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-700 font-medium">
+              className="inline-flex items-center gap-1 text-sm font-medium" style={{color: 'var(--dash-gold)'}}>
               <Plus className="w-4 h-4" />
               Agregar producto
             </button>
           </div>
           {selectedProducts === 0 && (
-            <p className="text-sm text-gray-400 mb-3">Agregá al menos un producto al combo</p>
+            <p className="text-sm mb-3" style={{color: 'var(--dash-text-muted)'}}>Agregá al menos un producto al combo</p>
           )}
           <div className="space-y-2">
             {items.map((item, idx) => (
               <div key={idx} className="flex items-center gap-3">
                 <select value={item.product_id}
                   onChange={e => updateItem(idx, 'product_id', e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
                 >
                   <option value="">Seleccionar producto</option>
                   {products.map(p => (
@@ -146,10 +146,10 @@ export default function NewComboPage() {
                     </option>
                   ))}
                 </select>
-                <label className="text-xs text-gray-500 whitespace-nowrap">Cant:</label>
+                <label className="text-xs whitespace-nowrap" style={{color: 'var(--dash-text-secondary)'}}>Cant:</label>
                 <input type="number" min={0} step="0.5" value={item.quantity}
                   onChange={e => updateItem(idx, 'quantity', e.target.value)}
-                  className="w-20 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-20 px-3 py-2 rounded-lg text-sm focus:outline-none" style={{borderColor: 'var(--dash-input-border)'}}
                 />
                 {items.length > 1 && (
                   <button type="button" onClick={() => removeItem(idx)}
@@ -165,14 +165,14 @@ export default function NewComboPage() {
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={form.active}
             onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+            className="rounded" style={{borderColor: 'var(--dash-input-border)', color: 'var(--dash-gold)'}}
           />
           Activo
         </label>
 
         <div className="pt-2">
           <button type="submit" disabled={saving}
-            className="px-6 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50" style={{background: 'var(--dash-gold)', color: '#111111'}}
           >
             {saving ? 'Creando...' : 'Crear Combo'}
           </button>

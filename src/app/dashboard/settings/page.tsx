@@ -49,14 +49,12 @@ export default function SettingsPage() {
     // Save AI config — encrypt only if not already encrypted
     const isApiKeyDirty = aiApiKey && !aiApiKey.includes('••••')
     if (isApiKeyDirty) {
-      // Call API route for encryption (uses service_role)
       await fetch('/api/settings/ai-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: aiProvider, apiKey: aiApiKey, model: aiModel }),
       })
     } else if (aiProvider || aiModel) {
-      // Only provider/model changed, upsert with existing (already encrypted) key
       await sb.from('app_settings').upsert({
         key: 'ai_config',
         value: { provider: aiProvider, apiKey: aiApiKey, model: aiModel },
@@ -77,53 +75,70 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto py-12">
-        <div className="w-6 h-6 border border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto" />
+        <div className="w-6 h-6 rounded-full animate-spin mx-auto" style={{ border: '2px solid var(--border)', borderTopColor: 'var(--brand)' }} />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium text-white"
+          style={{ background: 'var(--brand)' }}>General</span>
+        <a href="/dashboard/settings/payments" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Pagos</a>
+        <a href="/dashboard/settings/agent" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Agente</a>
+        <a href="/dashboard/settings/billing" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Facturación</a>
+      </div>
+
+      <h1 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>Configuración</h1>
 
       {/* WhatsApp */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+      <div className="card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Smartphone className="w-4 h-4 text-blue-600" />
-          <h2 className="font-semibold text-sm">WhatsApp</h2>
+          <Smartphone size={16} style={{ color: 'var(--brand)' }} />
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>WhatsApp</h2>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs" style={{ color: 'var(--muted)' }}>
           Configuración de la instancia de Evolution API. El número de WhatsApp se gestiona desde la
           conexión vía QR en la página de WhatsApp.
         </p>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Instancia de Evolution</label>
+          <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+            <Smartphone size={12} /> Instancia de Evolution
+          </label>
           <input
             type="text"
             value={evolutionInstance}
             onChange={e => setEvolutionInstance(e.target.value)}
             placeholder="concierge"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-[var(--radius-md)] border text-sm bg-transparent outline-none transition-colors focus:border-[var(--brand)]"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: 'var(--subtle)' }}>
             Nombre de la instancia en Evolution API. Por defecto: &quot;concierge&quot;
           </p>
         </div>
       </div>
 
       {/* AI Agent */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+      <div className="card p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-blue-600" />
-          <h2 className="font-semibold text-sm">Agente de IA</h2>
+          <Cpu size={16} style={{ color: 'var(--brand)' }} />
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>Agente de IA</h2>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+          <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+            <Cpu size={12} /> Proveedor
+          </label>
           <select
             value={aiProvider}
             onChange={e => setAiProvider(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-[var(--radius-md)] border text-sm bg-transparent outline-none transition-colors focus:border-[var(--brand)]"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
           >
             <option value="openai">OpenAI</option>
             <option value="anthropic">Anthropic (Claude)</option>
@@ -134,26 +149,32 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+          <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+            <Cpu size={12} /> API Key
+          </label>
           <input
             type="password"
             value={aiApiKey}
             onChange={e => setAiApiKey(e.target.value)}
             placeholder="sk-..."
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-[var(--radius-md)] border text-sm bg-transparent outline-none transition-colors focus:border-[var(--brand)]"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+          <label className="flex items-center gap-1.5 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+            <Cpu size={12} /> Modelo
+          </label>
           <input
             type="text"
             value={aiModel}
             onChange={e => setAiModel(e.target.value)}
             placeholder="deepseek-chat"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-[var(--radius-md)] border text-sm bg-transparent outline-none transition-colors focus:border-[var(--brand)]"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: 'var(--subtle)' }}>
             Ej: gpt-4o, claude-sonnet-4-20250514, deepseek-chat, gemini-2.0-flash, llama-3.3-70b-versatile
           </p>
         </div>
@@ -162,9 +183,10 @@ export default function SettingsPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] text-white text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
+        style={{ background: 'var(--brand)' }}
       >
-        <Save className="w-4 h-4" />
+        <Save size={16} />
         {saving ? 'Guardando...' : saved ? 'Guardado' : 'Guardar Cambios'}
       </button>
     </div>

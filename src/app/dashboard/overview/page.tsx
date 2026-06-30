@@ -1,106 +1,156 @@
-'use client'
+import { createClient } from '@/lib/supabase/server'
+import DashboardOverview from '@/components/DashboardOverview'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { ShoppingCart, Package, Users, TrendingUp } from 'lucide-react'
+export default async function OverviewPage() {
+  const supabase = await createClient()
 
-interface KpiCard {
-  label: string
-  value: string
-  icon: React.ReactNode
-  change?: string
-  color: string
-}
+  // ── Date ranges ──
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
-export default function OverviewPage() {
-  const { currentStore, authUser } = useAuthContext()
-  const [kpis, setKpis] = useState<KpiCard[]>([
-    { label: 'Pedidos Hoy', value: '—', icon: <ShoppingCart size={18} />, color: 'var(--brand)', change: '' },
-    { label: 'Productos', value: '—', icon: <Package size={18} />, color: 'var(--success)', change: '' },
-    { label: 'Clientes', value: '—', icon: <Users size={18} />, color: 'var(--info)', change: '' },
-    { label: 'Ingresos Hoy', value: '—', icon: <TrendingUp size={18} />, color: 'var(--warning)', change: '' },
+  // Helper: fetch or fallback to zero
+  async function countSince(from: string, table: string, filters?: Record<string, string>) {
+    let q = supabase.from(table).select('id', { count: 'exact', head: true }).gte('created_at', from)
+    if (filters) for (const [k, v] of Object.entries(filters)) q = q.eq(k, v)
+    const { count } = await q
+    return count ?? 0
+  }
+
+  // 1. KPIs
+  const [currentSales, prevSales] = await Promise.all([
+    supabase.from('orders').select('total_price').in('status', ['paid', 'completed']).gte('created_at', monthStart.toISOString()),
+    supabase.from('orders').select('total_price').in('status', ['paid', 'completed']).gte('created_at', prevMonthStart.toISOString()).lte('created_at', prevMonthEnd.toISOString()),
   ])
 
-  useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId) return
+  const ventasMes = (currentSales.data ?? []).reduce((s, o: any) => s + Number(o.total_price ?? 0), 0)
+  const ventasPrev = (prevSales.data ?? []).reduce((s, o: any) => s + Number(o.total_price ?? 0), 0)
 
-    async function loadKpis() {
-      try {
-        const sb = createClient()
+  const pedidosTotales = await countSince(monthStart.toISOString(), 'orders')
+  const pedidosPrev = await countSince(prevMonthStart.toISOString(), 'orders')
 
-        const { count: products } = await sb.from('products').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).eq('is_active', true)
-        const { count: customers } = await sb.from('customers').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+  const pendientesNow = await countSince(monthStart.toISOString(), 'orders', { status: 'pending' })
+  const pendientesPrev = await countSince(prevMonthStart.toISOString(), 'orders', { status: 'pending' })
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const { data: todayOrders } = await sb.from('orders')
-          .select('total')
-          .eq('organization_id', orgId)
-          .gte('created_at', today.toISOString())
-        const todayRevenue = (todayOrders ?? []).reduce((sum: number, o: { total: number }) => sum + Number(o.total), 0)
+  const clientesNuevos = await countSince(monthStart.toISOString(), 'customers')
+  const clientesPrev = await countSince(prevMonthStart.toISOString(), 'customers')
 
-        setKpis([
-          { label: 'Pedidos Hoy', value: String(todayOrders?.length ?? 0), icon: <ShoppingCart size={18} />, color: 'var(--brand)', change: '' },
-          { label: 'Productos', value: String(products ?? 0), icon: <Package size={18} />, color: 'var(--success)', change: '' },
-          { label: 'Clientes', value: String(customers ?? 0), icon: <Users size={18} />, color: 'var(--info)', change: '' },
-          { label: 'Ingresos Hoy', value: `$${todayRevenue.toLocaleString()}`, icon: <TrendingUp size={18} />, color: 'var(--warning)', change: '' },
-        ])
-      } catch {
-        // Dev mode — show sample data when Supabase is unavailable
-        setKpis([
-          { label: 'Pedidos Hoy', value: '12', icon: <ShoppingCart size={18} />, color: 'var(--brand)', change: '' },
-          { label: 'Productos', value: '48', icon: <Package size={18} />, color: 'var(--success)', change: '' },
-          { label: 'Clientes', value: '156', icon: <Users size={18} />, color: 'var(--info)', change: '' },
-          { label: 'Ingresos Hoy', value: '$1,280', icon: <TrendingUp size={18} />, color: 'var(--warning)', change: '' },
-        ])
-      }
+  // 2. Daily sales for chart (last 30 days)
+  const thirtyDaysAgo = new Date(now)
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const { data: dailySales } = await supabase
+    .from('orders')
+    .select('total_price, created_at')
+    .in('status', ['paid', 'completed'])
+    .gte('created_at', thirtyDaysAgo.toISOString())
+    .order('created_at', { ascending: true })
+
+  // 3. Order status distribution
+  const { data: statusCounts } = await supabase
+    .from('orders')
+    .select('status')
+    .gte('created_at', monthStart.toISOString())
+
+  // 4. Recent 8 orders
+  const { data: recentOrders } = await supabase
+    .from('orders')
+    .select('id, total_price, status, created_at, customer_name, items')
+    .order('created_at', { ascending: false })
+    .limit(8)
+
+  // 5. Top 5 products (by parsing orders items)
+  const { data: monthOrders } = await supabase
+    .from('orders')
+    .select('items')
+    .gte('created_at', monthStart.toISOString())
+
+  // 6. WhatsApp activity
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const weekStart = new Date(now)
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+
+  const [whatsappActive, whatsappMessages] = await Promise.all([
+    supabase.from('conversations').select('id', { count: 'exact', head: true }).gte('last_message_at', todayStart.toISOString()),
+    supabase.from('conversations').select('messages_count').gte('last_message_at', weekStart.toISOString()),
+  ])
+
+  const conversacionesHoy = whatsappActive.count ?? 0
+  const mensajesSemana = (whatsappMessages.data ?? []).reduce((s: number, c: any) => s + Number(c.messages_count ?? 0), 0)
+
+  // ── Aggregate: daily sales ──
+  const dayMap: Record<string, number> = {}
+  for (let d = new Date(thirtyDaysAgo); d <= now; d.setDate(d.getDate() + 1)) {
+    dayMap[d.toISOString().slice(0, 10)] = 0
+  }
+  for (const o of (dailySales ?? [])) {
+    const day = (o as any).created_at?.slice(0, 10)
+    if (day && day in dayMap) dayMap[day] += Number((o as any).total_price ?? 0)
+  }
+
+  // Group into weeks (7-day buckets)
+  const chartData: { label: string; ventas: number }[] = []
+  const sortedDays = Object.entries(dayMap).sort(([a], [b]) => a.localeCompare(b))
+  for (let i = 0; i < sortedDays.length; i += 7) {
+    const chunk = sortedDays.slice(i, i + 7)
+    const start = chunk[0][0].slice(5)
+    const end = chunk[chunk.length - 1][0].slice(5)
+    const total = chunk.reduce((s, [, v]) => s + v, 0)
+    chartData.push({ label: `${start}`, ventas: total })
+  }
+
+  // ── Aggregate: status distribution ──
+  const statusLabels: Record<string, string> = { pending: 'Pendiente', confirmed: 'Confirmado', paid: 'Pagado', completed: 'Completado', cancelled: 'Cancelado' }
+  const statusColors: Record<string, string> = { pending: '#D97706', confirmed: '#2563EB', paid: '#22C55E', completed: '#22C55E', cancelled: '#EF4444' }
+  const statusCount: Record<string, number> = {}
+  for (const o of (statusCounts ?? [])) {
+    const s = (o as any).status ?? 'unknown'
+    statusCount[s] = (statusCount[s] ?? 0) + 1
+  }
+  const totalOrders = (statusCounts ?? []).length
+
+  const statusData = Object.entries(statusCount).map(([key, count]) => ({
+    key,
+    label: statusLabels[key] ?? key,
+    count,
+    pct: totalOrders ? Math.round((count / totalOrders) * 100) : 0,
+    color: statusColors[key] ?? '#888880',
+  }))
+
+  // ── Aggregate: top 5 products ──
+  const productSales: Record<string, { qty: number; revenue: number }> = {}
+  for (const o of (monthOrders ?? [])) {
+    const items = (o as any).items as any[] ?? []
+    for (const item of items) {
+      const name = item.product_name ?? 'Desconocido'
+      if (!productSales[name]) productSales[name] = { qty: 0, revenue: 0 }
+      productSales[name].qty += item.boxes ?? item.qty ?? 0
+      productSales[name].revenue += Number(item.total ?? 0)
     }
-
-    loadKpis()
-  }, [authUser])
-
-  const greeting = authUser?.profile?.full_name
-    ? `Bienvenido, ${authUser.profile.full_name.split(' ')[0]}`
-    : 'Bienvenido'
+  }
+  const topProducts = Object.entries(productSales)
+    .sort(([, a], [, b]) => b.qty - a.qty)
+    .slice(0, 5)
+    .map(([name, data]) => ({ name, ...data }))
+  const maxProductQty = topProducts[0]?.qty ?? 1
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-xl font-semibold">{greeting}</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
-          {currentStore?.name ?? authUser?.organization?.name ?? 'Panel de control'}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map(kpi => (
-          <div key={kpi.label} className="card p-4 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <div
-                className="w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center"
-                style={{ background: `${kpi.color}15`, color: kpi.color }}
-              >
-                {kpi.icon}
-              </div>
-            </div>
-            <p className="text-2xl font-bold">{kpi.value}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{kpi.label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="card p-5">
-          <h2 className="font-semibold text-sm mb-4">Pedidos Recientes</h2>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Conectá tu tienda para ver pedidos</p>
-        </div>
-        <div className="card p-5">
-          <h2 className="font-semibold text-sm mb-4">Conversaciones Activas</h2>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Conectá WhatsApp para empezar</p>
-        </div>
-      </div>
-    </div>
+    <DashboardOverview
+      ventasMes={ventasMes}
+      ventasPrev={ventasPrev}
+      pedidosTotales={pedidosTotales}
+      pedidosPrev={pedidosPrev}
+      pendientesNow={pendientesNow}
+      pendientesPrev={pendientesPrev}
+      clientesNuevos={clientesNuevos}
+      clientesPrev={clientesPrev}
+      chartData={chartData}
+      statusData={statusData}
+      recentOrders={recentOrders as any[] ?? []}
+      topProducts={topProducts}
+      maxProductQty={maxProductQty}
+      conversacionesHoy={conversacionesHoy}
+      mensajesSemana={mensajesSemana}
+    />
   )
 }

@@ -13,10 +13,10 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  open:   { label: 'Abierta',  color: '#065f46', bg: '#f0fdf4' },
-  closed: { label: 'Cerrada',  color: '#991b1b', bg: '#fef2f2' },
-  bot:    { label: 'Bot activo', color: '#5b21b6', bg: '#f5f3ff' },
-  human:  { label: 'Humano',   color: '#1e40af', bg: '#eff6ff' },
+  open:   { label: 'Abierta',  color: 'var(--success)', bg: 'var(--success-bg)' },
+  closed: { label: 'Cerrada',  color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  bot:    { label: 'Bot activo', color: 'var(--info)', bg: 'var(--info-bg)' },
+  human:  { label: 'Humano',   color: 'var(--info)', bg: 'var(--info-bg)' },
 }
 
 interface ConvRow {
@@ -119,7 +119,7 @@ export default function ConversationsPage() {
                     </span>
                     {c.human_takeover && (
                       <span className="text-xs px-2 py-0.5 rounded-[var(--radius-full)] font-medium"
-                        style={{ background: '#eff6ff', color: '#1e40af' }}
+                        style={{ background: 'var(--info-bg)', color: 'var(--info)' }}
                       >
                         Humano
                       </span>

@@ -134,7 +134,7 @@ const STOP_WORDS = [
   'cuando', 'cuándo', 'hace', 'hacia', 'para', 'por', 'con', 'sin',
   'pero', 'mas', 'más', 'menos', 'entre', 'todo', 'toda', 'algo',
   'este', 'esta', 'ese', 'esa', 'un', 'una', 'unas', 'unos',
-  'tenes', 'tiene', 'tienen', 'hay', 'esta', 'estan', 'está',
+  'tenes', 'tenés', 'tiene', 'tienen', 'hay', 'esta', 'están', 'está',
   'quiero', 'quisiera', 'necesito', 'busco', 'podes', 'puede',
   'algún', 'algun', 'alguna', 'alguno', 'ningun', 'ninguna',
 ]

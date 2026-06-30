@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createClient } from '@/lib/supabase/client'
 
 export default function MetrosCalculator() {
   const [ancho, setAncho] = useState('')
@@ -13,6 +14,22 @@ export default function MetrosCalculator() {
     conDesperdicio: boolean
   } | null>(null)
   const [showDesperdicio, setShowDesperdicio] = useState(false)
+  const [adhesivos, setAdhesivos] = useState<
+    { name: string; price_per_m2: number | null; price_per_unit: number | null; category: string }[]
+  >([])
+
+  useEffect(() => {
+    async function loadAdhesivos() {
+      const sb = createClient()
+      const { data } = await sb
+        .from('products')
+        .select('name, price_per_m2, price_per_unit, category')
+        .in('category', ['pegamento', 'pastina'])
+        .limit(10)
+      if (data) setAdhesivos(data)
+    }
+    loadAdhesivos()
+  }, [])
 
   function handleCalcular(conDesperdicio = false) {
     const w = parseFloat(ancho)
@@ -141,6 +158,51 @@ export default function MetrosCalculator() {
                   </button>
                 </motion.div>
               )}
+
+              {/* Adhesivos calculator */}
+              <div className="mt-6 pt-5 border-t border-taupe/15">
+                <p className="text-xs tracking-[0.08em] uppercase text-stone-gray/60 font-light mb-3">
+                  También necesitarás
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-stone-gray">
+                    <span className="text-lg font-serif text-charcoal-soft">
+                      {Math.ceil(resultado.total / 5)}
+                    </span>
+                    <span className="ml-2">bolsa{Math.ceil(resultado.total / 5) !== 1 ? 's' : ''} de pegamento</span>
+                  </p>
+                  <p className="text-sm text-stone-gray">
+                    <span className="text-lg font-serif text-charcoal-soft">
+                      {Math.ceil(resultado.total / 5)}
+                    </span>
+                    <span className="ml-2">bolsa{Math.ceil(resultado.total / 5) !== 1 ? 's' : ''} de pastina</span>
+                  </p>
+                </div>
+                {(() => {
+                  const pegaPrice = adhesivos.find((a) => a.category === 'pegamento')?.price_per_unit
+                  const pastinaPrice = adhesivos.find((a) => a.category === 'pastina')?.price_per_unit
+                  if (pegaPrice && pastinaPrice) {
+                    const pegaTotal = pegaPrice * Math.ceil(resultado.total / 5)
+                    const pastinaTotal = pastinaPrice * Math.ceil(resultado.total / 5)
+                    return (
+                      <p className="text-xs text-stone-gray/60 mt-2">
+                        Precio estimado adhesivos:{' '}
+                        {new Intl.NumberFormat('es-AR', {
+                          style: 'currency',
+                          currency: 'ARS',
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        }).format(pegaTotal + pastinaTotal)}
+                      </p>
+                    )
+                  }
+                  return (
+                    <p className="text-xs text-stone-gray/50 mt-2 italic font-light">
+                      Precio a confirmar en el presupuesto final
+                    </p>
+                  )
+                })()}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

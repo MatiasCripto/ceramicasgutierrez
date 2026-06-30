@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrgAccess } from '@/lib/auth/require-org'
+import { requireAuth } from '@/lib/auth/require-org'
 import { logoutInstance } from '@/lib/evolution/evolution-api'
 
 export async function GET(req: NextRequest) {
-  const auth = await requireOrgAccess(req)
+  const auth = await requireAuth(req)
   if (!auth.authorized) return auth.response
 
   const instanceName = process.env.EVOLUTION_INSTANCE || 'concierge-wpp'

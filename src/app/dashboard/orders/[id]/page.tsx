@@ -622,7 +622,7 @@ export default function OrderDetailPage() {
                 {canEdit && (
                   <td className="px-4 py-2 text-right">
                     <button onClick={() => handleRemoveItem(item.id)} disabled={updating}
-                      className="p-1 rounded-[var(--radius-sm)] hover:bg-red-50 transition-colors"
+                      className="p-1 rounded-[var(--radius-sm)] transition-colors"
                       title="Eliminar">
                       <Trash2 size={14} style={{ color: 'var(--danger)' }} />
                     </button>

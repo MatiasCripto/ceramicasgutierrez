@@ -5,8 +5,10 @@ import { useEffect, useState } from 'react'
 const links = [
   { label: 'Pisos', href: '/pisos' },
   { label: 'Revestimientos', href: '/revestimientos' },
+  { label: 'Promociones', href: '/promociones' },
   { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },
+  { label: 'Locales', href: '/#locales' },
   { label: 'Calculadora', href: '/#calculadora' },
   { label: 'Contacto', href: '/#contacto' },
 ]

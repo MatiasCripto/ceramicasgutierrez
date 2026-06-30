@@ -9,17 +9,17 @@ interface Order {
   items?: { id: string }[]
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'status-pending',
-  awaiting_payment: 'status-pending',
-  payment_under_review: 'status-under-review',
-  payment_confirmed: 'status-paid',
-  preparing: 'status-preparing',
-  shipped: 'status-shipped',
-  delivered: 'status-delivered',
-  completed: 'status-delivered',
-  cancelled: 'status-cancelled',
-  refunded: 'status-cancelled',
+const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  pending:           { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+  awaiting_payment:  { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+  payment_under_review: { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+  payment_confirmed: { bg: 'var(--success-bg)', color: 'var(--success)' },
+  preparing:         { bg: 'var(--info-bg)', color: 'var(--info)' },
+  shipped:           { bg: 'var(--info-bg)', color: 'var(--info)' },
+  delivered:         { bg: 'var(--success-bg)', color: 'var(--success)' },
+  completed:         { bg: 'var(--success-bg)', color: 'var(--success)' },
+  cancelled:         { bg: 'var(--danger-bg)', color: 'var(--danger)' },
+  refunded:          { bg: 'var(--danger-bg)', color: 'var(--danger)' },
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -107,7 +107,8 @@ export default function OrdersPage() {
                   <td className="px-4 py-3 font-medium">#{o.id.slice(0, 8)}</td>
                   <td className="px-4 py-3">{o.customer?.full_name ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`badge ${STATUS_COLORS[o.status] ?? ''}`}>
+                    <span className="rounded-full px-2.5 py-1 text-xs font-medium inline-flex items-center gap-1.5"
+                      style={{ background: STATUS_STYLES[o.status]?.bg ?? 'var(--surface-2)', color: STATUS_STYLES[o.status]?.color ?? 'var(--muted)' }}>
                       {STATUS_LABELS[o.status] ?? o.status}
                     </span>
                   </td>

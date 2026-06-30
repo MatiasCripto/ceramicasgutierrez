@@ -52,12 +52,14 @@ export default function AgentSettingsPage() {
     return (
       <div className="space-y-6 animate-fade-in max-w-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <a href="/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          <a href="/dashboard/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>General</a>
-          <a href="/settings/payments" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          <a href="/dashboard/settings/payments" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Pagos</a>
           <span className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium text-white"
             style={{ background: 'var(--brand)' }}>Agente</span>
+          <a href="/dashboard/settings/billing" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+            style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Facturación</a>
         </div>
         <div className="text-sm" style={{ color: 'var(--muted)' }}>Cargando...</div>
       </div>
@@ -67,12 +69,14 @@ export default function AgentSettingsPage() {
   return (
     <div className="space-y-6 animate-fade-in max-w-2xl">
       <div className="flex items-center gap-2 mb-2">
-        <a href="/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+        <a href="/dashboard/settings" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
           style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>General</a>
-        <a href="/settings/payments" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+        <a href="/dashboard/settings/payments" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
           style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Pagos</a>
         <span className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium text-white"
           style={{ background: 'var(--brand)' }}>Agente</span>
+        <a href="/dashboard/settings/billing" className="text-xs px-3 py-1.5 rounded-[var(--radius-full)] font-medium transition-colors"
+          style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>Facturación</a>
       </div>
 
       <div className="flex items-center gap-3">

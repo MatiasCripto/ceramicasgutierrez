@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrgAccess } from '@/lib/auth/require-org'
+import { requireAuth } from '@/lib/auth/require-org'
 import { getConnectionState, fetchInstances } from '@/lib/evolution/evolution-api'
 
 export async function GET(req: NextRequest) {
-  const auth = await requireOrgAccess(req)
+  const auth = await requireAuth(req)
   if (!auth.authorized) return auth.response
 
   const instanceName = process.env.EVOLUTION_INSTANCE || 'concierge-wpp'
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const state = await getConnectionState(instanceName)
     return NextResponse.json({ instance: state ?? { state: 'close' } })
   } catch (err) {
-    console.error('[EVO STATUS]', err)
+    console.error('[EVO STATUS] Error:', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ instance: { state: 'close' } })
   }
 }
