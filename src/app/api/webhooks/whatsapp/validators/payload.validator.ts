@@ -107,13 +107,16 @@ export async function validateWebhookPayload(req: NextRequest): Promise<
     return { ok: false, response: NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
   }
 
-  // 4. Filter events
-  if (payload.event !== 'messages.upsert') {
+  // 4. Filter events (case-insensitive: Evolution API may send "messages.upsert" or "MESSAGES_UPSERT")
+  const eventMatch = payload.event?.toLowerCase() === 'messages.upsert'
+  if (!eventMatch) {
+    console.log('[WEBHOOK] skipping event type:', payload.event, '(expected messages.upsert)')
     return { ok: false, response: NextResponse.json({ ok: true }) }
   }
 
   const data = payload.data as EvolutionMessageData
   if (data.key?.fromMe) {
+    console.log('[WEBHOOK] skipping own message (fromMe=true)')
     return { ok: false, response: NextResponse.json({ ok: true }) }
   }
 

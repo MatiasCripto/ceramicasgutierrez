@@ -81,7 +81,7 @@ export default function MetrosCalculator() {
           </div>
 
           {/* m² por caja + botón */}
-          <div className="flex gap-4 items-end">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
             <div className="flex-1">
               <label className="block text-xs tracking-[0.12em] uppercase text-stone-gray font-light mb-2">
                 m² por caja
@@ -99,7 +99,7 @@ export default function MetrosCalculator() {
             <button
               type="button"
               onClick={() => handleCalcular(false)}
-              className="px-8 py-3 bg-charcoal-soft text-warm-ivory text-sm tracking-[0.08em] uppercase font-light rounded-full hover:bg-charcoal-soft/90 transition-all duration-300 whitespace-nowrap"
+              className="px-5 md:px-8 py-3 bg-charcoal-soft text-warm-ivory text-sm tracking-[0.08em] uppercase font-light rounded-full hover:bg-charcoal-soft/90 transition-all duration-300 whitespace-nowrap"
             >
               Calcular
             </button>

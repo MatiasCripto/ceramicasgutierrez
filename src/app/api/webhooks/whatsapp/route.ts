@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendText, downloadMedia } from '@/lib/bot/evolution-client'
+// Auto-start background poller for Evolution API messages (workaround for webhook issues)
+import { pollNewMessages, syncLastProcessedId } from '@/lib/evolution/message-poller'
 import { getProductImages, sendProductImages } from '@/lib/bot/product-images'
 import {
   getOrCreateConversation, saveMessage, updateContext,
@@ -27,6 +29,24 @@ import type { EvolutionMessageData, BotContext } from '@/lib/types/whatsapp.type
 
 const CHECKOUT_STATES: Set<string> = new Set(['name', 'dni', 'shipping', 'address', 'payment_method', 'payment_waiting_proof', 'confirm', 'completed'])
 const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
+
+// ── Auto-iniciar poller de mensajes Evolution API ─────────────
+// En Evolution API v2.3.7 los webhooks pueden fallar. Este poller
+// consulta la DB de Evolution directamente como respaldo.
+if (!(globalThis as any).__pollerStarted) {
+  ;(globalThis as any).__pollerStarted = true
+  syncLastProcessedId().then(() => {
+    console.log('[BOOT] Evolution message poller synced, starting background polling')
+    setInterval(async () => {
+      try {
+        const r = await pollNewMessages()
+        if (r.found > 0) console.log(`[POLLER] ${r.processed}/${r.found} processed, ${r.errors} errors`)
+      } catch (e) {
+        console.error('[POLLER] cycle error:', e)
+      }
+    }, 10_000) // cada 10 segundos
+  })
+}
 
 function isCheckoutState(s: string): boolean {
   return CHECKOUT_STATES.has(s)
@@ -91,12 +111,21 @@ export async function POST(req: NextRequest) {
   let conversationId: string | undefined
 
   try {
+    // Log the RAW request for debugging
+    const rawBody = await req.clone().text()
+    console.log('[WEBHOOK] RAW BODY (first 200):', rawBody.slice(0, 200))
+
     const validated = await validateWebhookPayload(req)
-    if (!validated.ok) return validated.response
+    console.log('[WEBHOOK] validated:', validated.ok)
+    if (!validated.ok) {
+      console.log('[WEBHOOK] validation failed:', JSON.stringify(validated).slice(0, 200))
+      return validated.response
+    }
 
     const { payload, phone, text, pushName } = validated.data
     const data = payload.data as EvolutionMessageData
     console.log('[WEBHOOK] msg from:', phone, 'text:', text.slice(0, 60))
+    console.log('[WEBHOOK] pushName:', pushName, 'msgId:', data.key?.id, 'fromMe:', data.key?.fromMe)
 
     // ── Single-tenant: conectar directo a Supabase ──────────────
     const sb = createServiceClient()

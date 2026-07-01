@@ -89,7 +89,8 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
             <thead>
               <tr style={{ background: 'var(--surface-2)' }}>
                 <th className="text-left px-4 py-3 font-medium">Pedido</th>
@@ -120,6 +121,7 @@ export default function OrdersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

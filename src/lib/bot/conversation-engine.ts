@@ -103,7 +103,7 @@ export async function fetchProducts(sb: SupabaseClient) {
     .select('id, name, description, category, size, color, finish, brand, price_per_m2, price_per_unit, m2_per_box, stock_m2, stock_units, images, attributes')
     .eq('active', true)
     .order('name')
-    .limit(30)
+    .limit(300)
 
   return data ?? []
 }

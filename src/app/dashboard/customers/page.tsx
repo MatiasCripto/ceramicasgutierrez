@@ -75,6 +75,7 @@ export default function CustomersPage() {
       ) : (
         <>
           <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: 'var(--surface-2)' }}>
@@ -109,6 +110,7 @@ export default function CustomersPage() {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
 
           {totalPages > 1 && (
