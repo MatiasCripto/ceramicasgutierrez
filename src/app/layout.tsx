@@ -19,6 +19,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Cerámicas Gutiérrez — Superficies que transforman espacios',
   description: 'Showroom en Gutiérrez, Berazategui. Revestimientos y superficies de diseño.',
+  icons: {
+    icon: '/logo1.png',
+    apple: '/logo1.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`h-full antialiased ${playfair.variable} ${inter.variable}`}
     >
+      <head>
+        <link rel="icon" href="/logo1.png" />
+      </head>
       <body className="min-h-full flex flex-col font-sans text-charcoal-soft bg-warm-ivory">
         <AuthProvider>
           <RouteRefresh>
