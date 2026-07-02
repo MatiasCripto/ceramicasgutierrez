@@ -40,17 +40,14 @@ export default function OrdersPage() {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/orders')
-        const data = await res.json()
-        setOrders(Array.isArray(data) ? data : [])
-      } catch {
-        // Dev mode — empty state
-      }
-      setLoading(false)
-    }
-    load()
+    fetch('/api/orders')
+      .then(r => {
+        if (!r.ok) throw new Error(`GET /api/orders returned ${r.status}`)
+        return r.json()
+      })
+      .then(data => setOrders(Array.isArray(data) ? data : []))
+      .catch(err => console.error('[ORDERS] fetch failed:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   const filtered = filter ? orders.filter(o => o.status === filter) : orders
