@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Component, useEffect, useState } from 'react'
 
 interface Order {
-  id: string; status: string; total: number; created_at: string
-  customer?: { full_name: string } | null
-  items?: { id: string }[]
+  id?: string; status?: string; total?: number; created_at?: string
+  customer?: { full_name?: string } | null
+  items?: { id?: string }[]
 }
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -34,8 +34,28 @@ const STATUS_LABELS: Record<string, string> = {
   refunded: 'Reembolsado',
 }
 
-export default function OrdersClient() {
-  const [orders, setOrders] = useState<Order[]>([])
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  componentDidCatch(error: Error) { console.error('[ORDERS] ErrorBoundary caught:', error) }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="card p-8 text-center">
+          <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Error al cargar pedidos</p>
+          <p className="text-xs mt-2" style={{ color: 'var(--muted)' }}>{this.state.error.message}</p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function OrdersInner() {
+  const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
 
@@ -50,7 +70,8 @@ export default function OrdersClient() {
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = filter ? orders.filter(o => o.status === filter) : orders
+  const safeOrders = Array.isArray(orders) ? orders : []
+  const filtered = filter ? safeOrders.filter((o: any) => o?.status === filter) : safeOrders
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -94,21 +115,21 @@ export default function OrdersClient() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(o => (
-                <tr key={o.id} className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors" style={{ borderColor: 'var(--border)' }}
-                  onClick={() => window.location.href = `/orders/${o.id}`}
+              {filtered.map((o: any) => (
+                <tr key={o?.id ?? Math.random()} className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors" style={{ borderColor: 'var(--border)' }}
+                  onClick={() => { if (o?.id) window.location.href = `/orders/${o.id}` }}
                 >
-                  <td className="px-4 py-3 font-medium">#{o.id.slice(0, 8)}</td>
-                  <td className="px-4 py-3">{o.customer?.full_name ?? '—'}</td>
+                  <td className="px-4 py-3 font-medium">#{o?.id?.slice(0, 8) ?? '—'}</td>
+                  <td className="px-4 py-3">{o?.customer?.full_name ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full px-2.5 py-1 text-xs font-medium inline-flex items-center gap-1.5"
-                      style={{ background: STATUS_STYLES[o.status]?.bg ?? 'var(--surface-2)', color: STATUS_STYLES[o.status]?.color ?? 'var(--muted)' }}>
-                      {STATUS_LABELS[o.status] ?? o.status}
+                      style={{ background: STATUS_STYLES[o?.status]?.bg ?? 'var(--surface-2)', color: STATUS_STYLES[o?.status]?.color ?? 'var(--muted)' }}>
+                      {STATUS_LABELS[o?.status] ?? o?.status ?? '—'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-medium">${o.total.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right font-medium">${o?.total?.toLocaleString() ?? '0'}</td>
                   <td className="px-4 py-3 text-right" style={{ color: 'var(--muted)' }}>
-                    {new Date(o.created_at).toLocaleDateString('es-AR')}
+                    {o?.created_at ? new Date(o.created_at).toLocaleDateString('es-AR') : '—'}
                   </td>
                 </tr>
               ))}
@@ -118,5 +139,13 @@ export default function OrdersClient() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function OrdersClient() {
+  return (
+    <ErrorBoundary>
+      <OrdersInner />
+    </ErrorBoundary>
   )
 }
