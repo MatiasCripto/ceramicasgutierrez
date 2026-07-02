@@ -120,7 +120,7 @@ function OrdersInner() {
                   onClick={() => { if (o?.id) window.location.href = `/orders/${o.id}` }}
                 >
                   <td className="px-4 py-3 font-medium">#{o?.id?.slice(0, 8) ?? '—'}</td>
-                  <td className="px-4 py-3">{o?.customer?.full_name ?? '—'}</td>
+                  <td className="px-4 py-3">{o?.customer_name || o?.customer_phone || '—'}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full px-2.5 py-1 text-xs font-medium inline-flex items-center gap-1.5"
                       style={{ background: STATUS_STYLES[o?.status]?.bg ?? 'var(--surface-2)', color: STATUS_STYLES[o?.status]?.color ?? 'var(--muted)' }}>
