@@ -6,7 +6,6 @@ import { Bell, CheckCheck, ArrowLeft } from 'lucide-react'
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications({
-    organizationId: null,
     limit: 100,
   })
 

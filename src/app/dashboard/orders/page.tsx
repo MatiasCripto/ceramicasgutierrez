@@ -1,6 +1,5 @@
 'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useEffect, useState } from 'react'
 
 interface Order {
@@ -45,7 +44,7 @@ export default function OrdersPage() {
       try {
         const res = await fetch('/api/orders')
         const data = await res.json()
-        setOrders((data ?? []) as Order[])
+        setOrders(Array.isArray(data) ? data : [])
       } catch {
         // Dev mode — empty state
       }

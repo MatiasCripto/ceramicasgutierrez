@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireAuth } from '@/lib/auth/require-org'
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireAuth(req)
-    if (!auth.authorized) return auth.response
-
     const { storeName, whatsappNumber, evolutionInstance, logoUrl } = await req.json()
     const sb = createServiceClient()
 
-    // Find the store (single-tenant — no org filter)
     let storeId: string | null = null
     if (evolutionInstance) {
       const { data } = await sb.from('stores').select('id').eq('evolution_instance', evolutionInstance).maybeSingle()

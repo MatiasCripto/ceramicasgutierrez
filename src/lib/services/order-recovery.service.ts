@@ -1,11 +1,11 @@
 // ── Order Recovery Service ────────────────────────────────────
 // Finds abandoned orders and sends payment reminders.
+// Single-tenant: sin organization_id.
 
 import { recordOrderEvent } from '@/lib/services/order-event.service'
 
 interface OrderForReminder {
   id: string
-  organization_id: string
   customer_id: string
   total: number
   reminder_count: number
@@ -22,7 +22,7 @@ export async function findOrdersNeedingReminder(
 ): Promise<OrderForReminder[]> {
   const cutoff = new Date(Date.now() - reminderMinutes * 60 * 1000).toISOString()
   const { data } = await sb.from('orders')
-    .select('id, organization_id, customer_id, total, reminder_count, reminder_stopped, last_reminder_sent_at, created_at, customer:customers(phone)')
+    .select('id, customer_id, total, reminder_count, reminder_stopped, last_reminder_sent_at, created_at, customer:customers(phone)')
     .eq('status', 'awaiting_payment')
     .eq('reminder_stopped', false)
     .lt('reminder_count', maxReminders)
@@ -44,7 +44,6 @@ export async function sendReminder(
   }
 
   try {
-    // Send via Evolution API
     await fetch(`${process.env.EVOLUTION_API_URL}/message/sendText/${process.env.EVOLUTION_INSTANCE}`, {
       method: 'POST',
       headers: {
@@ -58,13 +57,11 @@ export async function sendReminder(
       }),
     })
 
-    // Update reminder tracking
     await sb.from('orders').update({
       reminder_count: order.reminder_count + 1,
       last_reminder_sent_at: new Date().toISOString(),
     }).eq('id', order.id)
 
-    // Record audit event
     await recordOrderEvent(sb, {
       order_id: order.id,
       type: 'note_added',

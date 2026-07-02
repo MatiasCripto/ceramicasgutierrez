@@ -1,5 +1,6 @@
 // ── Payment Reminder Workflow ─────────────────────────────────
 // Orchestrates sending payment reminders for abandoned orders.
+// Single-tenant: sin organization loop.
 
 import { findOrdersNeedingReminder, sendReminder } from '@/lib/services/order-recovery.service'
 
@@ -9,33 +10,30 @@ const REMINDER_MESSAGES = [
 ]
 
 export async function runPaymentReminders(sb: any): Promise<number> {
-  // Get all organizations with reminder settings
-  const { data: allSettings } = await sb.from('order_expiration_settings')
-    .select('organization_id, reminder_1_minutes, reminder_2_minutes, reminder_final_minutes')
+  const { data: settings } = await sb.from('order_expiration_settings')
+    .select('reminder_1_minutes, reminder_2_minutes, reminder_final_minutes')
     .eq('enabled', true)
+    .maybeSingle()
 
-  if (!allSettings?.length) return 0
+  if (!settings) return 0
 
   let totalSent = 0
 
-  for (const setting of allSettings) {
-    // Check each reminder interval
-    const intervals = [
-      { minutes: setting.reminder_1_minutes, max: 1 },
-      { minutes: setting.reminder_2_minutes, max: 2 },
-      { minutes: setting.reminder_final_minutes, max: 3 },
-    ]
+  const intervals = [
+    { minutes: settings.reminder_1_minutes, max: 1 },
+    { minutes: settings.reminder_2_minutes, max: 2 },
+    { minutes: settings.reminder_final_minutes, max: 3 },
+  ]
 
-    for (const interval of intervals) {
-      if (!interval.minutes) continue
+  for (const interval of intervals) {
+    if (!interval.minutes) continue
 
-      const orders = await findOrdersNeedingReminder(sb, interval.minutes, interval.max)
+    const orders = await findOrdersNeedingReminder(sb, interval.minutes, interval.max)
 
-      for (const order of orders) {
-        const msgIndex = Math.min(order.reminder_count, REMINDER_MESSAGES.length - 1)
-        const ok = await sendReminder(sb, order, REMINDER_MESSAGES[msgIndex])
-        if (ok) totalSent++
-      }
+    for (const order of orders) {
+      const msgIndex = Math.min(order.reminder_count, REMINDER_MESSAGES.length - 1)
+      const ok = await sendReminder(sb, order, REMINDER_MESSAGES[msgIndex])
+      if (ok) totalSent++
     }
   }
 

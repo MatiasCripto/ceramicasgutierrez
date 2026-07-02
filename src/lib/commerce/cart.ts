@@ -1,6 +1,6 @@
 // ── Conversational Cart Management ──────────────────────────
 // Server-side validated cart operations.
-// The AI proposes; the backend validates and executes.
+// Single-tenant: sin organizationId.
 
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -17,33 +17,28 @@ export interface CartItemResult {
 }
 
 export async function getOrCreateCart(
-  organizationId: string,
   customerId: string | null,
   sessionId?: string
 ): Promise<string> {
   const sb = createServiceClient()
 
-  // If customer exists, find their active cart
   if (customerId) {
     const { data: existing } = await sb
       .from('carts')
       .select('id')
       .eq('customer_id', customerId)
-      .eq('organization_id', organizationId)
       .gte('expires_at', new Date().toISOString())
       .maybeSingle()
 
     if (existing) return existing.id
   }
 
-  // Create new cart
   const expiresAt = new Date()
-  expiresAt.setHours(expiresAt.getHours() + 72) // 72h expiry
+  expiresAt.setHours(expiresAt.getHours() + 72)
 
   const { data: cart } = await sb
     .from('carts')
     .insert({
-      organization_id: organizationId,
       customer_id: customerId,
       session_id: sessionId ?? null,
       expires_at: expiresAt.toISOString(),
@@ -56,7 +51,6 @@ export async function getOrCreateCart(
 }
 
 export async function addToCart(
-  organizationId: string,
   customerId: string | null,
   variantId: string,
   quantity: number,
@@ -64,10 +58,9 @@ export async function addToCart(
 ): Promise<{ ok: boolean; error?: string }> {
   const sb = createServiceClient()
 
-  // Validate variant exists and has stock
   const { data: variant } = await sb
     .from('product_variants')
-    .select('id, stock, price_override, is_active, product:products(id, name, price, organization_id)')
+    .select('id, stock, price_override, is_active, product:products(id, name, price)')
     .eq('id', variantId)
     .maybeSingle()
 
@@ -79,17 +72,10 @@ export async function addToCart(
   const product = v.product as Record<string, unknown> | null
   if (!product) return { ok: false, error: 'Producto no encontrado' }
 
-  // Validate org matches
-  if (product.organization_id !== organizationId) {
-    return { ok: false, error: 'Producto no pertenece a esta tienda' }
-  }
-
   const unitPrice = (v.price_override as number | null) ?? (product.price as number)
 
-  // Get or create cart
-  const cartId = await getOrCreateCart(organizationId, customerId, sessionId)
+  const cartId = await getOrCreateCart(customerId, sessionId)
 
-  // Check if variant already in cart
   const { data: existingItem } = await sb
     .from('cart_items')
     .select('id, quantity')
@@ -115,7 +101,6 @@ export async function addToCart(
 }
 
 export async function getCartItems(
-  organizationId: string,
   customerId: string | null,
   sessionId?: string
 ): Promise<{ items: CartItemResult[]; total: number; cartId: string | null }> {
@@ -128,7 +113,6 @@ export async function getCartItems(
       .from('carts')
       .select('id')
       .eq('customer_id', customerId)
-      .eq('organization_id', organizationId)
       .gte('expires_at', new Date().toISOString())
       .maybeSingle()
     if (cart) cartId = cart.id
@@ -139,7 +123,6 @@ export async function getCartItems(
       .from('carts')
       .select('id')
       .eq('session_id', sessionId)
-      .eq('organization_id', organizationId)
       .gte('expires_at', new Date().toISOString())
       .maybeSingle()
     if (cart) cartId = cart.id

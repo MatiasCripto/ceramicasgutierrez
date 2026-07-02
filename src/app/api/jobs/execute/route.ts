@@ -4,15 +4,14 @@ import { checkRateLimit } from '@/lib/utils/rate-limit'
 
 const JOB_SECRET = process.env.JOB_SECRET
 
-const WORKFLOWS: Record<string, (orgId: string, entityType: string, entityId: string) => Promise<string>> = {
-  cart_abandonment_24h: async (orgId, entityType, entityId) => {
+const WORKFLOWS: Record<string, (entityType: string, entityId: string) => Promise<string>> = {
+  cart_abandonment_24h: async (entityType, entityId) => {
     const sb = createServiceClient()
     const { data: customer } = await sb.from('customers').select('id, full_name, phone').eq('id', entityId).maybeSingle()
     if (!customer) return 'SKIP: customer not found'
     const c = customer as { id: string; full_name: string; phone?: string }
     const { data: cart } = await sb.from('carts').select('id').eq('customer_id', c.id).gte('expires_at', new Date().toISOString()).maybeSingle()
     if (!cart) return 'SKIP: no active cart'
-    // Send WhatsApp reminder via Evolution API
     await fetch(`${process.env.EVOLUTION_API_URL}/message/sendText/${process.env.EVOLUTION_INSTANCE}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: process.env.EVOLUTION_API_KEY ?? '' },
@@ -25,7 +24,7 @@ const WORKFLOWS: Record<string, (orgId: string, entityType: string, entityId: st
     return 'cart_abandonment_24h sent'
   },
 
-  post_purchase_7d: async (orgId, entityType, entityId) => {
+  post_purchase_7d: async (entityType, entityId) => {
     const sb = createServiceClient()
     const { data: order } = await sb.from('orders')
       .select('id, total, customer:customers(id, full_name, phone)')
@@ -44,7 +43,7 @@ const WORKFLOWS: Record<string, (orgId: string, entityType: string, entityId: st
     return 'post_purchase sent'
   },
 
-  reengagement_30d: async (orgId, entityType, entityId) => {
+  reengagement_30d: async (entityType, entityId) => {
     const sb = createServiceClient()
     const { data: customer } = await sb.from('customers').select('id, full_name, phone').eq('id', entityId).maybeSingle()
     if (!customer) return 'SKIP: customer not found'
@@ -63,7 +62,6 @@ const WORKFLOWS: Record<string, (orgId: string, entityType: string, entityId: st
 }
 
 export async function POST(req: NextRequest) {
-  // Validate job secret
   const auth = req.headers.get('authorization')?.replace('Bearer ', '')
   if (!JOB_SECRET) {
     return NextResponse.json({ error: 'Job secret not configured' }, { status: 503 })
@@ -72,16 +70,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { workflow, entityType, entityId, organizationId } = await req.json()
-  if (!workflow || !entityType || !entityId || !organizationId) {
+  const { workflow, entityType, entityId } = await req.json()
+  if (!workflow || !entityType || !entityId) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  // Rate limit: 10 jobs/min per workflow
   const rl = checkRateLimit(`job:${workflow}`, 10, 60_000)
   if (!rl.allowed) return NextResponse.json({ error: 'Too many jobs' }, { status: 429 })
 
-  // Idempotency: check if already executed recently
   const sb = createServiceClient()
   const { data: existing } = await sb.from('automation_logs')
     .select('id, executed_at')
@@ -94,14 +90,12 @@ export async function POST(req: NextRequest) {
 
   if (existing) return NextResponse.json({ ok: true, skipped: true })
 
-  // Execute workflow
   const handler = WORKFLOWS[workflow]
   if (!handler) return NextResponse.json({ error: `Unknown workflow: ${workflow}` }, { status: 400 })
 
   try {
-    const result = await handler(organizationId, entityType, entityId)
+    const result = await handler(entityType, entityId)
     await sb.from('automation_logs').insert({
-      organization_id: organizationId,
       workflow,
       entity_type: entityType,
       entity_id: entityId,
@@ -112,7 +106,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const errorMsg = String(err)
     await sb.from('automation_logs').insert({
-      organization_id: organizationId,
       workflow,
       entity_type: entityType,
       entity_id: entityId,

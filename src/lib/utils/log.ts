@@ -1,13 +1,11 @@
 /**
- * Structured logging helper for Concierge AI.
- * Every log line includes org_id, conversation_id, and timestamp ISO.
- * Use in place of console.log in production code paths.
+ * Structured logging helper.
+ * Every log line includes conversation_id and timestamp ISO.
+ * Single-tenant: sin orgId ni storeId.
  */
 
 type LogMeta = {
-  orgId?: string | null
   conversationId?: string | null
-  storeId?: string | null
   phone?: string | null
   [key: string]: unknown
 }

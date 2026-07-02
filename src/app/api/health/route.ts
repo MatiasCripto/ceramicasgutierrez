@@ -8,7 +8,7 @@ export async function GET() {
   // 1. Check Supabase connectivity
   try {
     const sb = createServiceClient()
-    const { error } = await sb.from('organizations').select('id').limit(1)
+    const { error } = await sb.from('orders').select('id').limit(1)
     checks.supabase = error ? `error: ${error.message}` : true
     if (error) healthy = false
   } catch (err) {

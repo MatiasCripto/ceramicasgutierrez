@@ -1,10 +1,10 @@
 // ── Notification Service ──────────────────────────────────────
 // Creates notifications for key events across the system.
+// Single-tenant: sin organization_id.
 
 import { insertNotification } from '@/lib/repositories/notification.repository'
 
 type NotificationInput = {
-  organization_id: string
   type: string
   title: string
   description?: string
@@ -15,21 +15,16 @@ type NotificationInput = {
 
 export async function createNotification(sb: any, input: NotificationInput) {
   await insertNotification(sb, input)
-  console.log('[NOTIFICATION] created:', input.type, 'for org:', input.organization_id)
+  console.log('[NOTIFICATION] created:', input.type)
 }
 
-/**
- * Create a notification for a new order.
- */
 export async function notifyNewOrder(
   sb: any,
-  orgId: string,
   orderId: string,
   orderNumber: string,
   total: number,
 ) {
   await createNotification(sb, {
-    organization_id: orgId,
     type: 'new_order',
     title: `Nuevo pedido #${orderNumber}`,
     description: `Pedido por $${total.toFixed(2)}`,
@@ -38,17 +33,12 @@ export async function notifyNewOrder(
   })
 }
 
-/**
- * Create a notification when a payment proof is received.
- */
 export async function notifyPaymentProof(
   sb: any,
-  orgId: string,
   orderId: string,
   proofId: string,
 ) {
   await createNotification(sb, {
-    organization_id: orgId,
     type: 'payment_proof',
     title: 'Nuevo comprobante de pago',
     description: 'Un cliente subió un comprobante para revisar',

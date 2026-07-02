@@ -1,50 +1,48 @@
 // ── Order Expiration Service ──────────────────────────────────
 // Business logic for expiring unpaid orders.
+// Single-tenant: sin organization loop.
 
-import { getExpirationSettings, getOrdersExpiring } from '@/lib/repositories/order-expiration.repository'
+import { getExpirationSettings } from '@/lib/repositories/order-expiration.repository'
 import { releaseStockForOrder } from '@/lib/services/stock-reservation.service'
 import { recordOrderEvent } from '@/lib/services/order-event.service'
 
-/**
- * Find and expire all orders past their organization's expiration threshold.
- * Returns the number of orders expired.
- */
 export async function expireOverdueOrders(sb: any): Promise<number> {
-  // Get all organizations with expiration enabled
-  const { data: allSettings } = await sb.from('order_expiration_settings')
-    .select('organization_id, expiration_minutes, auto_release_stock')
-    .eq('enabled', true)
+  const settings = await getExpirationSettings(sb)
+  if (!settings?.enabled) return 0
 
-  if (!allSettings?.length) return 0
+  const expirationMinutes = settings.expiration_minutes ?? 1440
+  const autoReleaseStock = settings.auto_release_stock ?? false
+
+  const cutoff = new Date(Date.now() - expirationMinutes * 60 * 1000).toISOString()
+  const { data: orders } = await sb.from('orders')
+    .select('id')
+    .eq('status', 'awaiting_payment')
+    .lt('created_at', cutoff)
+    .limit(50)
+
+  if (!orders?.length) return 0
 
   let totalExpired = 0
 
-  for (const setting of allSettings) {
-    const orders = await getOrdersExpiring(sb, setting.expiration_minutes)
+  for (const order of orders) {
+    try {
+      await sb.from('orders').update({ status: 'expired' }).eq('id', order.id)
 
-    for (const order of orders) {
-      try {
-        // Update order status to expired
-        await sb.from('orders').update({ status: 'expired' }).eq('id', order.id)
+      await recordOrderEvent(sb, {
+        order_id: order.id,
+        type: 'expired',
+        actor_type: 'system',
+        metadata: { reason: 'payment_timeout', expiration_minutes },
+      })
 
-        // Record audit event
-        await recordOrderEvent(sb, {
-          order_id: order.id,
-          type: 'expired',
-          actor_type: 'system',
-          metadata: { reason: 'payment_timeout', expiration_minutes: setting.expiration_minutes },
-        })
-
-        // Auto-release stock if configured
-        if (setting.auto_release_stock) {
-          await releaseStockForOrder(sb, order.id)
-        }
-
-        totalExpired++
-        console.log('[EXPIRATION] expired order:', order.id)
-      } catch (err) {
-        console.error('[EXPIRATION] failed to expire order:', order.id, err)
+      if (autoReleaseStock) {
+        await releaseStockForOrder(sb, order.id)
       }
+
+      totalExpired++
+      console.log('[EXPIRATION] expired order:', order.id)
+    } catch (err) {
+      console.error('[EXPIRATION] failed to expire order:', order.id, err)
     }
   }
 

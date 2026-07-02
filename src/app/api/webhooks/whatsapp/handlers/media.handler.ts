@@ -70,12 +70,8 @@ export async function handleMediaMessage(params: MediaHandlerParams): Promise<Ne
   // Reset checkout state (keep activeOrderId so customer can still reference it)
   ctx.checkoutItems = undefined
   ctx.checkoutName = undefined
-  ctx.checkoutDni = undefined
   ctx.checkoutShippingMethod = undefined
   ctx.checkoutAddress = undefined
-  ctx.checkoutLocality = undefined
-  ctx.checkoutReferences = undefined
-  ctx.checkoutPickup = undefined
   ctx.checkoutPaymentMethod = undefined
   ctx.state = 'closed'
 

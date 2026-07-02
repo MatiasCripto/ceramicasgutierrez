@@ -1,19 +1,18 @@
 // ── Order Expiration Repository ───────────────────────────────
 // Data access for order_expiration_settings table.
+// Single-tenant: sin organization_id.
 
-export async function getExpirationSettings(sb: any, orgId: string) {
+export async function getExpirationSettings(sb: any) {
   const { data } = await sb.from('order_expiration_settings')
     .select('*')
-    .eq('organization_id', orgId)
     .maybeSingle()
 
   return data ?? null
 }
 
-export async function upsertExpirationSettings(sb: any, orgId: string, settings: Record<string, any>) {
+export async function upsertExpirationSettings(sb: any, settings: Record<string, any>) {
   const { data, error } = await sb.from('order_expiration_settings')
     .upsert({
-      organization_id: orgId,
       ...settings,
       updated_at: new Date().toISOString(),
     })
@@ -33,7 +32,7 @@ export async function getOrdersExpiring(
 ): Promise<any[]> {
   const cutoff = new Date(Date.now() - expirationMinutes * 60 * 1000).toISOString()
   const { data } = await sb.from('orders')
-    .select('id, organization_id')
+    .select('id')
     .eq('status', 'awaiting_payment')
     .lt('created_at', cutoff)
     .limit(50)
