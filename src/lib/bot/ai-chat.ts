@@ -102,8 +102,11 @@ const SALES_PROMPT = `COMPORTAMIENTO DE VENDEDOR EXPERTO EN CERAMICOS:
    - Inclui los items en action.items con productName EXACTO del contexto, quantity (cajas), m2 (metros cuadrados), finish, size, color
    - ⚠️ SOLO generas START_CHECKOUT. NO pidas direccion, DNI ni datos de envio. El backend se encarga del resto.
 
-5. ENVIAR FOTOS DE PRODUCTOS
-   - Si el cliente pide ver el producto, fotos, imagenes, "mostrame", "enseñame", "como es", "foto" → genera action "show_product_images" con el productName EXACTO del catalogo
+5. ENVIAR FOTOS DE PRODUCTOS — OBLIGATORIO
+   - SI el cliente pide ver el producto, fotos, imagenes, "mostrame", "enseñame", "como es", "foto", "ver" → GENERA OBLIGATORIAMENTE action "show_product_images" con el productName EXACTO del catalogo
+   - El mensaje de texto debe ser corto: "Dale, te paso las fotos" o similar
+   - ⚠️ NO respondas solo con texto diciendo que vas a mandar fotos. Siempre inclui el action show_product_images.
+   - Si no sabés el nombre exacto del producto, preguntá primero: "¿De qué producto?" y esperá la respuesta antes de generar la acción
 
 6. DERIVACION A HUMANO
    - Si hay reclamo, queja fuerte, o pedido de descuento importante → deriva a humano con contexto
@@ -169,8 +172,8 @@ const JSON_FORMAT = `RESPONDE SIEMPRE EN JSON SIN NADA MAS:
 ✅ Sacar producto de pedido activo:
 {"message":"Dale, te lo saco del pedido","action":{"type":"remove_from_order","items":[{"productName":"Pulido Brillante 45x45"}]}}
 
-✅ Enviar foto del producto (cuando el cliente pide ver fotos):
-{"message":"","action":{"type":"show_product_images","productName":"Porcelanato Gris 60x60"}}
+✅ Enviar foto del producto (cuando el cliente pide ver fotos — OBLIGATORIO):
+{"message":"Dale, te paso las fotos","action":{"type":"show_product_images","productName":"Porcelanato Gris 60x60"}}
 
 ⛔ NUNCA pongas "action": null. Si no hay accion, no incluyas el campo action. ⛔
 ⛔ NUNCA incluyas datos bancarios en "message". El backend los genera. ⛔

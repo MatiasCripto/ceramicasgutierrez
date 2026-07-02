@@ -28,27 +28,6 @@ import type { EvolutionMessageData, BotContext } from '@/lib/types/whatsapp.type
 const CHECKOUT_STATES: Set<string> = new Set(['name', 'dni', 'shipping', 'address', 'payment_method', 'payment_waiting_proof', 'confirm', 'completed'])
 const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
 
-// ── Auto-iniciar poller de mensajes Evolution API ─────────────
-// Solo en desarrollo. En produccion los webhooks de Evolution
-// funcionan directamente y el poller no tiene acceso a la DB.
-// Dynamic import para evitar que Next.js cargue pg durante el build.
-if (process.env.NODE_ENV !== 'production' && !(globalThis as any).__pollerStarted) {
-  ;(globalThis as any).__pollerStarted = true
-  import('@/lib/evolution/message-poller').then(({ syncLastProcessedId, pollNewMessages }) => {
-    syncLastProcessedId().then(() => {
-      console.log('[BOOT] Evolution message poller synced, starting background polling')
-      setInterval(async () => {
-        try {
-          const r = await pollNewMessages()
-          if (r.found > 0) console.log(`[POLLER] ${r.processed}/${r.found} processed, ${r.errors} errors`)
-        } catch (e) {
-          console.error('[POLLER] cycle error:', e)
-        }
-      }, 10_000) // cada 10 segundos
-    })
-  })
-}
-
 function isCheckoutState(s: string): boolean {
   return CHECKOUT_STATES.has(s)
 }
