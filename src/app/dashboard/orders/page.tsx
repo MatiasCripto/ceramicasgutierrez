@@ -36,17 +36,14 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default function OrdersPage() {
-  const { authUser } = useAuthContext()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId) return
     async function load() {
       try {
-        const res = await fetch(`/api/orders?organization_id=${orgId}`)
+        const res = await fetch('/api/orders')
         const data = await res.json()
         setOrders((data ?? []) as Order[])
       } catch {
@@ -55,7 +52,7 @@ export default function OrdersPage() {
       setLoading(false)
     }
     load()
-  }, [authUser])
+  }, [])
 
   const filtered = filter ? orders.filter(o => o.status === filter) : orders
 

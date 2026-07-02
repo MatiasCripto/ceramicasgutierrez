@@ -16,7 +16,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 }
 
 export default function ConversationDetailPage() {
-  const { authUser } = useAuthContext()
   const params = useParams()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -27,14 +26,13 @@ export default function ConversationDetailPage() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId || !params.id) return
+    if (!params.id) return
     async function load() {
       try {
         const sb = createClient()
         const { data: conv } = await sb.from('conversations')
           .select('*, customer:customers(full_name, phone, email)')
-          .eq('id', params.id as string).eq('organization_id', orgId).single()
+          .eq('id', params.id as string).single()
         if (conv) {
           setConversation(conv as unknown as Conversation)
           const { data: msgs } = await sb.from('messages')
@@ -62,7 +60,7 @@ export default function ConversationDetailPage() {
       .subscribe()
 
     return () => { sb.removeChannel(channel) }
-  }, [authUser, params.id])
+  }, [params.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

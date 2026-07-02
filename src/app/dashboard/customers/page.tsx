@@ -8,7 +8,6 @@ import { formatCurrency, formatDate } from '@/lib/utils/formatters'
 import type { Customer } from '@/lib/types'
 
 export default function CustomersPage() {
-  const { authUser } = useAuthContext()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -17,14 +16,11 @@ export default function CustomersPage() {
   const PAGE_SIZE = 25
 
   useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId) return
     async function load() {
       try {
         const sb = createClient()
         let query = sb.from('customers')
           .select('*', { count: 'exact' })
-          .eq('organization_id', orgId)
           .order('created_at', { ascending: false })
           .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
@@ -41,7 +37,7 @@ export default function CustomersPage() {
       setLoading(false)
     }
     load()
-  }, [authUser, search, page])
+  }, [search, page])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 

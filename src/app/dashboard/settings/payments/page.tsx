@@ -1,13 +1,11 @@
 'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Banknote, Save, Eye, Trash2, Check, AlertCircle, Building2, User, Key, CreditCard } from 'lucide-react'
 import type { PaymentAccount } from '@/lib/types'
 
 export default function PaymentsSettingsPage() {
-  const { authUser } = useAuthContext()
   const [account, setAccount] = useState<PaymentAccount | null>(null)
   const [bankName, setBankName] = useState('')
   const [accountHolder, setAccountHolder] = useState('')
@@ -21,9 +19,7 @@ export default function PaymentsSettingsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const orgId = authUser?.organization?.id
-        const apiUrl = `/api/settings/payment-accounts${orgId ? `?orgId=${orgId}` : ''}`
-        const res = await fetch(apiUrl)
+        const res = await fetch('/api/settings/payment-accounts')
         if (res.ok) {
           const data = await res.json() as PaymentAccount | null
           if (data) {
@@ -45,8 +41,7 @@ export default function PaymentsSettingsPage() {
     setSaving(true)
     setSaved('idle')
     try {
-      const orgId = authUser?.organization?.id
-      const res = await fetch(`/api/settings/payment-accounts${orgId ? `?orgId=${orgId}` : ''}`, {
+      const res = await fetch('/api/settings/payment-accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,8 +68,7 @@ export default function PaymentsSettingsPage() {
   async function handleClear() {
     setSaving(true)
     try {
-      const orgId = authUser?.organization?.id
-      await fetch(`/api/settings/payment-accounts${orgId ? `?orgId=${orgId}` : ''}`, { method: 'DELETE' })
+      await fetch('/api/settings/payment-accounts', { method: 'DELETE' })
       setAccount(null)
       setBankName('')
       setAccountHolder('')

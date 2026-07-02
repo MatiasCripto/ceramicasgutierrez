@@ -31,20 +31,16 @@ interface ConvRow {
 }
 
 export default function ConversationsPage() {
-  const { authUser } = useAuthContext()
   const [convs, setConvs] = useState<ConvRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId) return
     async function load() {
       try {
         const sb = createClient()
         let query = sb.from('conversations')
           .select('id, channel, status, human_takeover, last_message_at, created_at, customer:customers(full_name, phone), messages:messages(body)')
-          .eq('organization_id', orgId)
           .order('last_message_at', { ascending: false, nullsFirst: false })
           .limit(50)
 
@@ -61,7 +57,7 @@ export default function ConversationsPage() {
       setLoading(false)
     }
     load()
-  }, [authUser, filter])
+  }, [filter])
 
   const statuses = ['', 'open', 'bot', 'human', 'closed']
 

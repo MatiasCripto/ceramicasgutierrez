@@ -9,7 +9,6 @@ import { formatCurrency, formatDate, formatRelative, getRfmConfig } from '@/lib/
 import type { Customer, Order, CustomerScore } from '@/lib/types'
 
 export default function CustomerDetailPage() {
-  const { authUser } = useAuthContext()
   const params = useParams()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
@@ -17,18 +16,17 @@ export default function CustomerDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const orgId = authUser?.organization?.id
-    if (!orgId || !params.id) return
+    if (!params.id) return
     async function load() {
       try {
         const sb = createClient()
         const { data: c } = await sb.from('customers')
-          .select('*').eq('id', params.id as string).eq('organization_id', orgId).single()
+          .select('*').eq('id', params.id as string).single()
         if (c) {
           setCustomer(c as Customer)
           const { data: o } = await sb.from('orders')
             .select('id, status, total, created_at')
-            .eq('customer_id', c.id).eq('organization_id', orgId)
+            .eq('customer_id', c.id)
             .order('created_at', { ascending: false }).limit(20)
           setOrders((o ?? []) as Order[])
           const { data: s } = await sb.from('customer_scores')
@@ -41,7 +39,7 @@ export default function CustomerDetailPage() {
       setLoading(false)
     }
     load()
-  }, [authUser, params.id])
+  }, [params.id])
 
   if (loading) return <div className="text-sm" style={{ color: 'var(--muted)' }}>Cargando...</div>
   if (!customer) return <div className="text-sm" style={{ color: 'var(--muted)' }}>Cliente no encontrado</div>

@@ -48,7 +48,7 @@ function getEventConfig(type: string): { label: string; color: string } {
 }
 
 export default function OrderDetailPage() {
-  const { authUser } = useAuthContext()
+  const { user } = useAuthContext()
   const params = useParams()
   const router = useRouter()
   const [order, setOrder] = useState<Order | null>(null)
@@ -66,16 +66,13 @@ export default function OrderDetailPage() {
   const [addQuantity, setAddQuantity] = useState(1)
 
   useEffect(() => {
-    if (!authUser?.organization?.id || !params.id) return
+    if (!params.id) return
     async function load() {
-      const orgId = authUser?.organization?.id
-      if (!orgId) return
       try {
         const sb = createClient()
         const { data } = await sb.from('orders')
           .select('*, customer:customers(*), items:order_items(*)')
           .eq('id', params.id as string)
-          .eq('organization_id', orgId)
           .single()
         setOrder(data as unknown as Order)
 
@@ -96,7 +93,6 @@ export default function OrderDetailPage() {
         // Load products for item editing
         const { data: prods } = await sb.from('products')
           .select('*, variants:product_variants(*)')
-          .eq('organization_id', orgId)
           .eq('is_active', true)
         setProducts((prods ?? []) as Product[])
       } catch {
@@ -105,7 +101,7 @@ export default function OrderDetailPage() {
       setLoading(false)
     }
     load()
-  }, [authUser, params.id])
+  }, [params.id])
 
   async function handleUpdateStatus(newStatus: string) {
     if (!order) return
@@ -129,13 +125,13 @@ export default function OrderDetailPage() {
   }
 
   async function handleApprovePayment(proofId: string) {
-    if (!order || !authUser) return
+    if (!order || !user) return
     setUpdating(true)
     try {
       const sb = createClient()
       await sb.from('payment_proofs').update({
         status: 'approved',
-        reviewed_by: authUser.user.id,
+        reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
         notes: reviewNote || null,
       }).eq('id', proofId)
@@ -159,13 +155,13 @@ export default function OrderDetailPage() {
   }
 
   async function handleRejectPayment(proofId: string) {
-    if (!order || !authUser) return
+    if (!order || !user) return
     setUpdating(true)
     try {
       const sb = createClient()
       await sb.from('payment_proofs').update({
         status: 'rejected',
-        reviewed_by: authUser.user.id,
+        reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
         notes: reviewNote || null,
       }).eq('id', proofId)

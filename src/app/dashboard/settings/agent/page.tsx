@@ -1,11 +1,9 @@
 'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useEffect, useState } from 'react'
 import { Bot, Save } from 'lucide-react'
 
 export default function AgentSettingsPage() {
-  const { authUser } = useAuthContext()
   const [businessType, setBusinessType] = useState('')
   const [salesPromptExtra, setSalesPromptExtra] = useState('')
   const [saving, setSaving] = useState(false)
@@ -25,7 +23,7 @@ export default function AgentSettingsPage() {
       setLoading(false)
     }
     load()
-  }, [authUser])
+  }, [])
 
   async function handleSave() {
     setSaving(true)

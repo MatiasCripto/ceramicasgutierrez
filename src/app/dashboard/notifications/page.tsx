@@ -1,14 +1,12 @@
 'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useNotifications } from '@/lib/hooks/use-notifications'
 import { formatRelative } from '@/lib/utils/formatters'
 import { Bell, CheckCheck, ArrowLeft } from 'lucide-react'
 
 export default function NotificationsPage() {
-  const { authUser } = useAuthContext()
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications({
-    organizationId: authUser?.organization?.id ?? null,
+    organizationId: null,
     limit: 100,
   })
 
