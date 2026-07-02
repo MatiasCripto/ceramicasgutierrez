@@ -13,6 +13,5 @@ import { ReactNode } from 'react'
  */
 export default function RouteRefresh({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  console.log(`🔵 ROUTE-REFRESH render key:${pathname}`)
   return <div key={pathname}>{children}</div>
 }

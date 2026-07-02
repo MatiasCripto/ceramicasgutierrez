@@ -5,8 +5,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendText, downloadMedia } from '@/lib/bot/evolution-client'
-// Auto-start background poller for Evolution API messages (workaround for webhook issues)
-import { pollNewMessages, syncLastProcessedId } from '@/lib/evolution/message-poller'
 import { getProductImages, sendProductImages } from '@/lib/bot/product-images'
 import {
   getOrCreateConversation, saveMessage, updateContext,
@@ -33,18 +31,21 @@ const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
 // ── Auto-iniciar poller de mensajes Evolution API ─────────────
 // Solo en desarrollo. En produccion los webhooks de Evolution
 // funcionan directamente y el poller no tiene acceso a la DB.
+// Dynamic import para evitar que Next.js cargue pg durante el build.
 if (process.env.NODE_ENV !== 'production' && !(globalThis as any).__pollerStarted) {
   ;(globalThis as any).__pollerStarted = true
-  syncLastProcessedId().then(() => {
-    console.log('[BOOT] Evolution message poller synced, starting background polling')
-    setInterval(async () => {
-      try {
-        const r = await pollNewMessages()
-        if (r.found > 0) console.log(`[POLLER] ${r.processed}/${r.found} processed, ${r.errors} errors`)
-      } catch (e) {
-        console.error('[POLLER] cycle error:', e)
-      }
-    }, 10_000) // cada 10 segundos
+  import('@/lib/evolution/message-poller').then(({ syncLastProcessedId, pollNewMessages }) => {
+    syncLastProcessedId().then(() => {
+      console.log('[BOOT] Evolution message poller synced, starting background polling')
+      setInterval(async () => {
+        try {
+          const r = await pollNewMessages()
+          if (r.found > 0) console.log(`[POLLER] ${r.processed}/${r.found} processed, ${r.errors} errors`)
+        } catch (e) {
+          console.error('[POLLER] cycle error:', e)
+        }
+      }, 10_000) // cada 10 segundos
+    })
   })
 }
 
