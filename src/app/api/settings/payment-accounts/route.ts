@@ -2,23 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireAuth } from '@/lib/auth/require-org'
 
-async function getOrgId() {
-  const sb = createServiceClient()
-  const { data } = await sb.from('organizations').select('id').limit(1).single()
-  return data?.id ?? null
-}
-
 export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = await getOrgId()
-    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const sb = createServiceClient()
     const { data, error } = await sb.from('payment_accounts')
       .select('*')
-      .eq('organization_id', orgId)
       .eq('is_active', true)
       .maybeSingle()
     if (error) console.log('[GET_ERR]', error?.message || error)
@@ -33,8 +24,6 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = await getOrgId()
-    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const body = await req.json()
     const { bank_name, account_holder, alias, cvu, payment_method, currency, priority, instructions, is_default } = body
@@ -44,16 +33,14 @@ export async function POST(req: NextRequest) {
 
     const sb = createServiceClient()
 
-    // Deactivate any existing active accounts for this org
+    // Deactivate any existing active accounts
     await sb.from('payment_accounts')
       .update({ is_active: false })
-      .eq('organization_id', orgId)
       .eq('is_active', true)
 
     // Upsert the new account
     const { data: existing, error: existingError } = await sb.from('payment_accounts')
       .select('id')
-      .eq('organization_id', orgId)
       .eq('bank_name', bank_name)
       .eq('account_holder', account_holder)
       .maybeSingle()
@@ -75,7 +62,6 @@ export async function POST(req: NextRequest) {
       result = data; lastError = error
     } else {
       const { data, error } = await sb.from('payment_accounts').insert({
-        organization_id: orgId,
         bank_name,
         account_holder,
         alias: alias ?? null,
@@ -100,13 +86,10 @@ export async function DELETE(req: NextRequest) {
   try {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = await getOrgId()
-    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const sb = createServiceClient()
     await sb.from('payment_accounts')
       .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('organization_id', orgId)
       .eq('is_active', true)
 
     return NextResponse.json({ ok: true })

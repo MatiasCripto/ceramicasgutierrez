@@ -11,29 +11,28 @@ export async function POST(req: NextRequest) {
     const { businessType, salesPromptExtra } = body
     const sb = createServiceClient()
 
-    // Get the first/only organization (single-tenant)
-    const { data: org } = await sb.from('organizations')
-      .select('id, settings')
-      .limit(1)
-      .single()
-    if (!org) return NextResponse.json({ error: 'No organization' }, { status: 500 })
+    // Read current settings from app_settings (single-tenant)
+    const { data: existing } = await sb.from('app_settings')
+      .select('value')
+      .eq('key', 'org_settings')
+      .maybeSingle()
 
-    const currentSettings = (org.settings ?? {}) as Record<string, unknown>
+    const currentSettings = (existing?.value ?? {}) as Record<string, unknown>
 
-    // Merge new values into settings
+    // Merge new values
     const updatedSettings: Record<string, unknown> = {
       ...currentSettings,
       businessType: businessType ?? currentSettings.businessType,
       salesPromptExtra: salesPromptExtra ?? currentSettings.salesPromptExtra,
     }
 
-    // Remove keys set to empty string (user wants to clear them)
     if (body.businessType === '') delete updatedSettings.businessType
     if (body.salesPromptExtra === '') delete updatedSettings.salesPromptExtra
 
-    await sb.from('organizations')
-      .update({ settings: updatedSettings })
-      .eq('id', org.id)
+    await sb.from('app_settings').upsert({
+      key: 'org_settings',
+      value: updatedSettings,
+    }, { onConflict: 'key' })
 
     return NextResponse.json({ ok: true, settings: updatedSettings })
   } catch (err) {
@@ -48,13 +47,12 @@ export async function GET(req: NextRequest) {
     if (!auth.authorized) return auth.response
 
     const sb = createServiceClient()
-    const { data: org } = await sb.from('organizations')
-      .select('settings')
-      .limit(1)
-      .single()
-    if (!org) return NextResponse.json({ error: 'No organization' }, { status: 500 })
+    const { data } = await sb.from('app_settings')
+      .select('value')
+      .eq('key', 'org_settings')
+      .maybeSingle()
 
-    const settings = (org.settings ?? {}) as Record<string, unknown>
+    const settings = (data?.value ?? {}) as Record<string, unknown>
     return NextResponse.json({
       businessType: settings.businessType ?? '',
       salesPromptExtra: settings.salesPromptExtra ?? '',

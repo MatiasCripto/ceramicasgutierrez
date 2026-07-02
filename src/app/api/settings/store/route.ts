@@ -7,30 +7,22 @@ export async function POST(req: NextRequest) {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
 
-    const { orgName, storeName, whatsappNumber, evolutionInstance, logoUrl } = await req.json()
+    const { storeName, whatsappNumber, evolutionInstance, logoUrl } = await req.json()
     const sb = createServiceClient()
 
-    // Get the first/only organization (single-tenant)
-    const { data: org } = await sb.from('organizations').select('id').limit(1).single()
-    if (!org) return NextResponse.json({ error: 'No organization' }, { status: 500 })
-    const orgId = org.id
-
-    // Find the store by organization
+    // Find the store (single-tenant — no org filter)
     let storeId: string | null = null
     if (evolutionInstance) {
-      const { data } = await sb.from('stores').select('id').eq('evolution_instance', evolutionInstance).eq('organization_id', orgId).maybeSingle()
+      const { data } = await sb.from('stores').select('id').eq('evolution_instance', evolutionInstance).maybeSingle()
       if (data) storeId = data.id
     } else {
-      const { data } = await sb.from('stores').select('id').eq('organization_id', orgId).limit(1).maybeSingle()
+      const { data } = await sb.from('stores').select('id').limit(1).maybeSingle()
       if (data) storeId = data.id
     }
     if (!storeId) {
       return NextResponse.json({ error: 'No store found' }, { status: 404 })
     }
 
-    if (orgName) {
-      await sb.from('organizations').update({ name: orgName }).eq('id', orgId)
-    }
     const updates: Record<string, string | null> = {}
     if (storeName) updates.name = storeName
     if (whatsappNumber !== undefined) updates.whatsapp_number = whatsappNumber
