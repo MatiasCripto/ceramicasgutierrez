@@ -74,23 +74,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isDevMode])
 
   const loadUserData = useCallback(async (user: User) => {
-    const profileRes = await supabase.from('profiles').select('*').eq('id', user.id).single()
-    const profile = profileRes.data as Profile | null
+    let profile: Profile | null = null
+    try {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      if (!error) profile = data as Profile | null
+      else console.warn('[Auth] profiles query failed (table may not exist or RLS blocks):', error?.message)
+    } catch { /* table likely doesn't exist */ }
 
-    const orgRes = profile?.organization_id
-      ? await supabase.from('organizations').select('*').eq('id', profile.organization_id).single()
-      : { data: null }
-    const org = (orgRes.data as Organization | null) ?? null
-
+    const org = null // single-tenant: no organizations table
     let stores: Store[] = []
-    if (org) {
-      const { data } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('organization_id', org.id)
-        .eq('is_active', true)
-        .order('name')
-      stores = (data as Store[]) ?? []
+    if (profile?.organization_id) {
+      try {
+        const { data } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('organization_id', profile.organization_id)
+          .eq('is_active', true)
+          .order('name')
+        stores = (data as Store[]) ?? []
+      } catch { /* stores query failed */ }
+    } else {
+      // Fallback: get the first active store with no org filter
+      try {
+        const { data } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle()
+        if (data) stores = [data as Store]
+      } catch { /* stores fallback failed */ }
     }
 
     // Apply localStorage overrides (set by settings page save, survives RLS fails)
