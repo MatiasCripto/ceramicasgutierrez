@@ -26,6 +26,7 @@ import type { EvolutionMessageData, BotContext } from '@/lib/types/whatsapp.type
 
 const CHECKOUT_STATES: Set<string> = new Set(['name', 'shipping', 'payment_method', 'confirm', 'completed'])
 const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
+const processedMessages = new Set<string>()
 
 function isCheckoutState(s: string): boolean {
   return CHECKOUT_STATES.has(s)
@@ -115,6 +116,18 @@ export async function POST(req: NextRequest) {
 
     // ── Message-level idempotency ───────────────────────────────
     const msgId = data.key?.id
+    // In-memory dedup (Evolution API envía el mismo evento varias veces)
+    if (msgId && processedMessages.has(msgId)) {
+      console.log('[WEBHOOK] duplicate msgId, skipping:', msgId)
+      return NextResponse.json({ ok: true })
+    }
+    if (msgId) {
+      processedMessages.add(msgId)
+      if (processedMessages.size > 100) {
+        const first = processedMessages.values().next().value
+        processedMessages.delete(first)
+      }
+    }
     if (msgId) {
       const { data: existingMsg } = await sb.from('messages')
         .select('id')
