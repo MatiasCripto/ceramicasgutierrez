@@ -10,16 +10,13 @@ const ORDER_SELECT = `
 `
 
 export async function GET(req: NextRequest) {
-  const customerId = req.nextUrl.searchParams.get('customer_id')
-  const status = req.nextUrl.searchParams.get('status')
-
   const sb = createServiceClient()
-  let query = sb.from('orders').select(ORDER_SELECT).order('created_at', { ascending: false })
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false })
 
-  if (customerId) query = query.eq('customer_id', customerId)
-  if (status) query = query.eq('status', status)
+  console.log('[ORDERS GET] error:', error)
+  console.log('[ORDERS GET] data:', data)
 
-  const { data } = await query.limit(50)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(Array.isArray(data) ? data : [])
 }
 
