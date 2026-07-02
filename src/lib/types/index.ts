@@ -253,7 +253,7 @@ export interface CheckoutSession {
   items: CheckoutItem[]
   customerName?: string
   dni?: string
-  shippingMethod?: 'shipping' | 'pickup'
+  shippingMethod?: 'delivery' | 'pickup'
   address?: string
   locality?: string
   references?: string

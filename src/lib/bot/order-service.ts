@@ -47,7 +47,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     total_boxes: input.totalBoxes,
     total_price: input.totalPrice,
     payment_method: input.paymentMethod,
-    shipping_method: input.shippingMethod,
+    shipping_method: input.shippingMethod === 'shipping' ? 'delivery' : input.shippingMethod,
     shipping_address: input.shippingAddress ?? null,
     status: 'pending',
     payment_status: 'pending',

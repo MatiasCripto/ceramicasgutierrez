@@ -215,6 +215,7 @@ export async function POST(req: NextRequest) {
         const totalM2 = session.items.reduce((sum, i) => sum + (i.m2 ?? 0), 0)
         const totalBoxes = session.items.reduce((sum, i) => sum + i.quantity, 0)
 
+        const normMethod = session.shippingMethod === 'shipping' ? 'delivery' : (session.shippingMethod ?? 'pickup')
         const orderResult = await createOrder({
           customerId: ctx.customerId,
           customerPhone: ctx.phone ?? phone,
@@ -224,7 +225,7 @@ export async function POST(req: NextRequest) {
           totalBoxes,
           totalPrice: 0,
           paymentMethod: session.paymentMethod ?? 'transfer',
-          shippingMethod: session.shippingMethod ?? 'pickup',
+          shippingMethod: normMethod,
           shippingAddress: session.address ?? null,
         })
 
