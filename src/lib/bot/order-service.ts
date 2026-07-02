@@ -1,6 +1,6 @@
 // ── Order Service — Cerámicas Gutiérrez ──────────────────────
 // Órdenes con items JSONB (sin order_items table).
-// Flujo de estados: pending → confirmed → paid → preparing → completed
+// Flujo de estados: pending → esperando_pago → pago_en_revision → pago_confirmado → preparando → enviado → entregado → completado
 
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -75,19 +75,30 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
 
 // ── Pure validation ──────────────────────────────────────────
 
-const EDITABLE_STATUSES = new Set(['pending', 'confirmed', 'paid', 'preparing'])
+const EDITABLE_STATUSES = new Set(['pending', 'esperando_pago', 'pago_en_revision', 'pago_confirmado', 'preparando', 'enviado'])
 
 export function canEditOrder(status: string): boolean {
   return EDITABLE_STATUSES.has(status)
 }
 
-const STATUS_FLOW = ['pending', 'confirmed', 'paid', 'preparing', 'completed']
+const STATUS_FLOW = ['pending', 'esperando_pago', 'pago_en_revision', 'pago_confirmado', 'preparando', 'enviado', 'entregado', 'completado']
+
+// Mapeo de estados legacy (DB existente) a los nuevos
+const LEGACY_STATUS_MAP: Record<string, string> = {
+  confirmed:  'pago_confirmado',
+  paid:       'pago_confirmado',
+  preparing:  'preparando',
+  completed:  'completado',
+  cancelled:  'cancelado',
+  refunded:   'cancelado',
+}
 
 export function isValidTransition(current: string, target: string): boolean {
-  // Cancel siempre permitido
-  if (target === 'cancelled') return true
+  // Cancelar siempre permitido
+  if (target === 'cancelado') return true
 
-  const currentIdx = STATUS_FLOW.indexOf(current)
+  const normalized = LEGACY_STATUS_MAP[current] ?? current
+  const currentIdx = STATUS_FLOW.indexOf(normalized)
   const targetIdx = STATUS_FLOW.indexOf(target)
   if (currentIdx === -1 || targetIdx === -1) return false
   return targetIdx > currentIdx
@@ -124,9 +135,9 @@ export async function updateOrderStatus(orderId: string, newStatus: string): Pro
     }
 
     // Sincronizar payment_status según el nuevo status
-    const paymentStatus = newStatus === 'paid' || newStatus === 'preparing' || newStatus === 'completed'
+    const paymentStatus = newStatus === 'pago_confirmado' || newStatus === 'preparando' || newStatus === 'enviado' || newStatus === 'entregado' || newStatus === 'completado'
       ? 'paid'
-      : newStatus === 'cancelled'
+      : newStatus === 'cancelado'
       ? 'refunded'
       : 'pending'
 
@@ -231,7 +242,7 @@ export async function removeItemsFromOrder(
 
     if (remainingItems.length === 0) {
       // Si no quedan items, cancelar la orden
-      await updateOrderStatus(orderId, 'cancelled')
+      await updateOrderStatus(orderId, 'cancelado')
       return true
     }
 

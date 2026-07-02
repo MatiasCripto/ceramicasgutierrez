@@ -38,23 +38,27 @@ export function formatRelative(date: string | Date): string {
 }
 
 export const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  pending:         { bg: '#fef3c7', color: '#92400e' },
-  confirmed:       { bg: '#dbeafe', color: '#1e40af' },
-  paid:            { bg: '#d1fae5', color: '#065f46' },
-  preparing:       { bg: '#e0e7ff', color: '#3730a3' },
-  completed:       { bg: '#d1fae5', color: '#065f46' },
-  cancelled:       { bg: '#fee2e2', color: '#991b1b' },
-  refunded:        { bg: '#fef3c7', color: '#92400e' },
+  pending:          { bg: '#fef3c7', color: '#92400e' },
+  esperando_pago:   { bg: '#ffedd5', color: '#9a3412' },
+  pago_en_revision: { bg: '#dbeafe', color: '#1e40af' },
+  pago_confirmado:  { bg: '#d1fae5', color: '#065f46' },
+  preparando:        { bg: '#e0e7ff', color: '#3730a3' },
+  enviado:           { bg: '#f3e8ff', color: '#6b21a8' },
+  entregado:         { bg: '#cffafe', color: '#0e7490' },
+  completado:        { bg: '#d1fae5', color: '#065f46' },
+  cancelado:         { bg: '#fee2e2', color: '#991b1b' },
 }
 
 export const STATUS_LABELS: Record<string, string> = {
-  pending:   'Pendiente',
-  confirmed: 'Confirmado',
-  paid:      'Pagado',
-  preparing: 'Preparando',
-  completed: 'Completado',
-  cancelled: 'Cancelado',
-  refunded:  'Reembolsado',
+  pending:           'Pendiente',
+  esperando_pago:    'Esperando pago',
+  pago_en_revision:  'Pago en revisión',
+  pago_confirmado:   'Pago confirmado',
+  preparando:        'Preparando',
+  enviado:           'Enviado',
+  entregado:         'Entregado',
+  completado:        'Completado',
+  cancelado:         'Cancelado',
 }
 
 export const PAYMENT_LABELS: Record<string, string> = {

@@ -3,17 +3,32 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, User, CreditCard, Truck, Clock } from 'lucide-react'
-import { formatCurrency, formatDateTime, STATUS_STYLES, STATUS_LABELS, PAYMENT_LABELS, SHIPPING_LABELS } from '@/lib/utils/formatters'
+import { formatCurrency, formatDateTime } from '@/lib/utils/formatters'
 
-const STATUS_FLOW = ['pending', 'confirmed', 'paid', 'preparing', 'completed']
+const STATUS_FLOW = ['pending', 'esperando_pago', 'pago_en_revision', 'pago_confirmado', 'preparando', 'enviado', 'entregado', 'completado']
+
+const STATUSES: Record<string, { label: string; color: string; bg: string }> = {
+  pending:         { label: 'Pendiente',        color: '#92400e', bg: '#fef3c7' },
+  esperando_pago:  { label: 'Esperando pago',    color: '#9a3412', bg: '#ffedd5' },
+  pago_en_revision:{ label: 'Pago en revisión',  color: '#1e40af', bg: '#dbeafe' },
+  pago_confirmado: { label: 'Pago confirmado',   color: '#065f46', bg: '#d1fae5' },
+  preparando:      { label: 'Preparando',        color: '#3730a3', bg: '#e0e7ff' },
+  enviado:         { label: 'Enviado',           color: '#6b21a8', bg: '#f3e8ff' },
+  entregado:       { label: 'Entregado',         color: '#0e7490', bg: '#cffafe' },
+  completado:      { label: 'Completado',        color: '#065f46', bg: '#d1fae5' },
+  cancelado:       { label: 'Cancelado',         color: '#991b1b', bg: '#fee2e2' },
+}
+
 const STATUS_COLORS: Record<string, string> = {
-  pending: '#f59e0b',
-  confirmed: '#3b82f6',
-  paid: '#10b981',
-  preparing: '#6366f1',
-  completed: '#10b981',
-  cancelled: '#ef4444',
-  refunded: '#f59e0b',
+  pending:         '#f59e0b',
+  esperando_pago:  '#ea580c',
+  pago_en_revision:'#3b82f6',
+  pago_confirmado: '#10b981',
+  preparando:      '#6366f1',
+  enviado:         '#9333ea',
+  entregado:       '#06b6d4',
+  completado:      '#10b981',
+  cancelado:       '#ef4444',
 }
 
 interface OrderItem {
@@ -33,21 +48,26 @@ interface OrderEvent {
   created_at: string
 }
 
+const EVENT_LABELS: Record<string, string> = {
+  created: 'Pedido creado',
+  pending: 'Pendiente',
+  esperando_pago: 'Esperando pago',
+  pago_en_revision: 'Pago en revisión',
+  pago_confirmado: 'Pago confirmado',
+  preparando: 'En preparación',
+  enviado: 'Enviado',
+  entregado: 'Entregado',
+  completado: 'Completado',
+  cancelado: 'Cancelado',
+  items_added: 'Productos agregados',
+  items_removed: 'Productos removidos',
+  proof_received: 'Comprobante recibido',
+  payment_proof_approved: 'Pago aprobado',
+  payment_proof_rejected: 'Pago rechazado',
+}
+
 function getEventLabel(type: string): string {
-  const map: Record<string, string> = {
-    created: 'Pedido creado',
-    confirmed: 'Pedido confirmado',
-    paid: 'Pago registrado',
-    preparing: 'En preparación',
-    completed: 'Completado',
-    cancelled: 'Cancelado',
-    items_added: 'Productos agregados',
-    items_removed: 'Productos removidos',
-    proof_received: 'Comprobante recibido',
-    payment_proof_approved: 'Pago aprobado',
-    payment_proof_rejected: 'Pago rechazado',
-  }
-  return map[type] ?? type.replace(/_/g, ' ')
+  return EVENT_LABELS[type] ?? type.replace(/_/g, ' ')
 }
 
 export default function OrderDetailPage() {
@@ -101,7 +121,7 @@ export default function OrderDetailPage() {
   if (!order) return <div className="text-sm" style={{ color: 'var(--muted)' }}>Pedido no encontrado</div>
 
   const items: OrderItem[] = Array.isArray(order.items) ? order.items : []
-  const statusCfg = STATUS_STYLES[order.status] ?? { bg: '#f3f4f6', color: '#6b7280' }
+  const statusCfg = STATUSES[order.status] ?? { bg: '#f3f4f6', color: '#6b7280' }
   const currentIdx = STATUS_FLOW.indexOf(order.status)
   const total = order.total_price ?? items.reduce((s, i) => s + (i.total ?? 0), 0)
 
@@ -118,11 +138,11 @@ export default function OrderDetailPage() {
           <h1 className="text-xl font-semibold">Pedido #{order.id?.slice(0, 8)}</h1>
           <span className="text-xs px-2 py-0.5 rounded-[var(--radius-full)] font-medium"
             style={{ background: statusCfg.bg, color: statusCfg.color }}>
-            {STATUS_LABELS[order.status] ?? order.status}
+            {statusCfg.label}
           </span>
         </div>
-        {!['cancelled', 'refunded', 'completed'].includes(order.status) && (
-          <button onClick={() => handleUpdateStatus('cancelled')} disabled={updating}
+        {order.status !== 'cancelado' && order.status !== 'completado' && (
+          <button onClick={() => handleUpdateStatus('cancelado')} disabled={updating}
             className="px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-medium text-white"
             style={{ background: '#ef4444' }}>
             Cancelar pedido
@@ -142,14 +162,14 @@ export default function OrderDetailPage() {
                   style={{ background: done ? color : 'var(--surface-2)' }}
                 />
                 <span className="text-[10px] text-center leading-tight" style={{ color: done ? color : 'var(--subtle)' }}>
-                  {STATUS_LABELS[s] ?? s}
+                  {STATUSES[s]?.label ?? s}
                 </span>
               </div>
             )
           })}
         </div>
 
-        {order.status !== 'cancelled' && order.status !== 'refunded' && order.status !== 'completed' && (
+        {order.status !== 'cancelado' && order.status !== 'completado' && (
           <div className="mt-4 pt-3 border-t flex flex-wrap gap-2" style={{ borderColor: 'var(--border)' }}>
             <span className="text-xs font-medium w-full mb-1" style={{ color: 'var(--subtle)' }}>
               Asignar estado manual:
@@ -158,7 +178,7 @@ export default function OrderDetailPage() {
               <button key={s} onClick={() => handleUpdateStatus(s)} disabled={updating}
                 className="px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-medium transition-opacity disabled:opacity-50 text-white"
                 style={{ background: STATUS_COLORS[s] ?? '#6b7280' }}>
-                {STATUS_LABELS[s] ?? s}
+                {STATUSES[s]?.label ?? s}
               </button>
             ))}
           </div>
@@ -194,13 +214,13 @@ export default function OrderDetailPage() {
               <span style={{ color: 'var(--muted)' }}>Pago</span>
               <span className="text-xs px-2 py-0.5 rounded-[var(--radius-full)] font-medium"
                 style={{ background: statusCfg.bg, color: statusCfg.color }}>
-                {PAYMENT_LABELS[order.payment_status] ?? order.payment_status}
+                {order.payment_status ?? '—'}
               </span>
             </div>
             {order.payment_method && (
               <div className="flex items-center justify-between">
                 <span style={{ color: 'var(--muted)' }}>Método</span>
-                <span>{PAYMENT_LABELS[order.payment_method] ?? order.payment_method}</span>
+                <span>{order.payment_method}</span>
               </div>
             )}
             {order.shipping_method && (
@@ -209,7 +229,7 @@ export default function OrderDetailPage() {
                   <Truck size={12} className="inline mr-1" />
                   Envío
                 </span>
-                <span>{SHIPPING_LABELS[order.shipping_method] ?? order.shipping_method}</span>
+                <span>{order.shipping_method}</span>
               </div>
             )}
           </div>
