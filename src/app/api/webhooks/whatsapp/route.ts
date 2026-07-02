@@ -31,9 +31,9 @@ const CHECKOUT_STATES: Set<string> = new Set(['name', 'dni', 'shipping', 'addres
 const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
 
 // ── Auto-iniciar poller de mensajes Evolution API ─────────────
-// En Evolution API v2.3.7 los webhooks pueden fallar. Este poller
-// consulta la DB de Evolution directamente como respaldo.
-if (!(globalThis as any).__pollerStarted) {
+// Solo en desarrollo. En produccion los webhooks de Evolution
+// funcionan directamente y el poller no tiene acceso a la DB.
+if (process.env.NODE_ENV !== 'production' && !(globalThis as any).__pollerStarted) {
   ;(globalThis as any).__pollerStarted = true
   syncLastProcessedId().then(() => {
     console.log('[BOOT] Evolution message poller synced, starting background polling')

@@ -1,9 +1,8 @@
 // ── WhatsApp webhook payload validators ──────────────────────
-// HMAC signature verification, rate limiting, and payload parsing.
-//
-// Production:  HMAC is REQUIRED. Missing/invalid signature → 401.
-// Development: HMAC is OPTIONAL. Missing header → warning + allow.
-//              Invalid signature still → 401 (catches real config issues early).
+// Evolution API does NOT send HMAC signatures in webhook headers.
+// Signature verification is entirely OPTIONAL — only enforced when
+// BOTH WEBHOOK_SECRET is set AND x-evolution-signature header is present.
+// Rate limiting and payload parsing are always enforced.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac } from 'node:crypto'
@@ -11,28 +10,6 @@ import { checkRateLimit } from '@/lib/utils/rate-limit'
 import type { EvolutionWebhookPayload, EvolutionMessageData } from '@/lib/types/whatsapp.types'
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
-const IS_PRODUCTION = process.env.NODE_ENV === 'production'
-
-// Startup validation
-if (!WEBHOOK_SECRET || WEBHOOK_SECRET === 'placeholder') {
-  if (IS_PRODUCTION) {
-    console.error(
-      '╔══════════════════════════════════════════════════════════════╗\n' +
-      '║  SECURITY ERROR: WEBHOOK_SECRET is NOT configured!          ║\n' +
-      '║  All webhook requests will be REJECTED with 401.            ║\n' +
-      '║  Set WEBHOOK_SECRET in your environment variables.          ║\n' +
-      '╚══════════════════════════════════════════════════════════════╝'
-    )
-  } else {
-    console.warn(
-      '╔══════════════════════════════════════════════════════════════╗\n' +
-      '║  WARNING: WEBHOOK_SECRET not configured.                    ║\n' +
-      '║  HMAC verification disabled in development.                 ║\n' +
-      '║  Set WEBHOOK_SECRET for production.                         ║\n' +
-      '╚══════════════════════════════════════════════════════════════╝'
-    )
-  }
-}
 
 export interface ValidatedPayload {
   payload: EvolutionWebhookPayload
@@ -46,29 +23,25 @@ export interface ValidatedPayload {
 /**
  * HMAC-SHA256 verification of Evolution API webhook payload.
  *
- * Production: REQUIRED — rejects if WEBHOOK_SECRET unset or header missing.
- * Development: OPTIONAL — missing header logs a warning but passes.
- *              If header IS present, it MUST be valid (catches config mistakes early).
+ * Evolution API does NOT send HMAC signatures, so this is entirely OPTIONAL.
+ * - If WEBHOOK_SECRET is unset or placeholder → skip (always allowed)
+ * - If WEBHOOK_SECRET is set AND x-evolution-signature header is present → verify
+ * - If WEBHOOK_SECRET is set AND header is missing → warn but allow
+ * - If header is present but invalid → reject (catches config issues)
  */
 function verifySignature(rawBody: string, signatureHeader: string | null): { ok: boolean; reason?: string } {
-  // WEBHOOK_SECRET not configured
+  // WEBHOOK_SECRET not configured → skip signature check entirely
   if (!WEBHOOK_SECRET || WEBHOOK_SECRET === 'placeholder') {
-    if (IS_PRODUCTION) {
-      return { ok: false, reason: 'WEBHOOK_SECRET not configured' }
-    }
-    return { ok: true } // dev: skip verification
+    return { ok: true }
   }
 
-  // Missing signature header
+  // Missing signature header — Evolution API doesn't send one, so allow
   if (!signatureHeader) {
-    if (IS_PRODUCTION) {
-      return { ok: false, reason: 'missing x-evolution-signature header' }
-    }
-    console.warn('[WEBHOOK] DEV: missing x-evolution-signature header — allowing request')
-    return { ok: true } // dev: warn but allow
+    console.warn('[WEBHOOK] missing x-evolution-signature header — allowing request (Evolution API does not sign webhooks)')
+    return { ok: true }
   }
 
-  // Verify HMAC
+  // Header IS present → verify it
   try {
     const expected = createHmac('sha256', WEBHOOK_SECRET).update(rawBody).digest('hex')
     const match = expected === signatureHeader
