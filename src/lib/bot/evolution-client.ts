@@ -26,6 +26,10 @@ async function evolutionFetch(path: string, body?: unknown, instanceName?: strin
 }
 
 export async function sendText(phone: string, text: string, delay = 1200, instanceName?: string) {
+  if (!text || text.trim() === '') {
+    console.error('[SEND] attempted to send empty message, aborting')
+    return
+  }
   const instance = resolveInstance(instanceName)
   return evolutionFetch(`/message/sendText/${instance}`, {
     number: phone,

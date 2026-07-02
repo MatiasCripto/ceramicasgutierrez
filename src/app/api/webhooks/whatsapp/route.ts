@@ -158,127 +158,139 @@ export async function POST(req: NextRequest) {
     console.log('[WEBHOOK] routing — state:', ctx.state, 'isCheckout:', isCheckoutState(ctx.state), 'activeOrderId:', ctx.activeOrderId)
 
     if (isCheckoutState(ctx.state)) {
-      console.log('[WEBHOOK] entering checkout flow, text:', text.slice(0, 50))
-
-      // Rebuild session from ctx
-      const session: CheckoutSession = {
-        state: ctx.state as CheckoutState,
-        items: ctx.checkoutItems ?? [],
-        customerName: ctx.checkoutName ?? ctx.customerName ?? undefined,
-        shippingMethod: ctx.checkoutShippingMethod as 'pickup' | 'delivery' | undefined,
-        address: ctx.checkoutAddress ?? undefined,
-        paymentMethod: ctx.checkoutPaymentMethod as 'cash' | 'transfer' | undefined,
-      }
-
-      const result = processCheckoutMessage(text, session)
-
-      // Persist session back to ctx
-      ctx.state = result.session.state
-      ctx.checkoutItems = result.session.items
-      ctx.checkoutName = result.session.customerName
-      ctx.checkoutShippingMethod = result.session.shippingMethod
-      ctx.checkoutAddress = result.session.address
-      ctx.checkoutPaymentMethod = result.session.paymentMethod
-
-      // ── Send payment info (transfer method) ────────────────
-      if (result.action?.type === 'send_payment_info') {
-        const paySettings = await getStorePaymentSettings(sb)
-        const bankMsg = paySettings
-          ? formatPaymentSettings(paySettings)
-          : '⚠️ No hay una cuenta bancaria configurada actualmente. Por favor hablanos con un asesor.'
-
-        if (result.response) {
-          appendHistory(ctx, text, result.response)
-          await saveMessage(conversationId, 'outbound', result.response)
-          await evoSend(phone, result.response)
-        }
-        await saveMessage(conversationId, 'outbound', bankMsg)
-        await evoSend(phone, bankMsg)
-        await updateContext(conversationId, ctx)
-        return NextResponse.json({ ok: true })
-      }
-
-      // ── Create order (confirmed) ───────────────────────────
-      if (result.action?.type === 'create_order') {
-        if (!ctx.customerId) {
-          await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Error: no se encontró el cliente')
-          return NextResponse.json({ ok: true })
-        }
-
-        const orderItems = session.items.map(item => ({
-          product_name: item.productName,
-          m2: item.m2 ?? 0,
-          boxes: item.quantity,
-          price_per_m2: 0,
-          total: 0,
-        }))
-        const totalM2 = session.items.reduce((sum, i) => sum + (i.m2 ?? 0), 0)
-        const totalBoxes = session.items.reduce((sum, i) => sum + i.quantity, 0)
-
-        const normMethod = session.shippingMethod === 'shipping' ? 'delivery' : (session.shippingMethod ?? 'pickup')
-        const orderResult = await createOrder({
-          customerId: ctx.customerId,
-          customerPhone: ctx.phone ?? phone,
-          customerName: session.customerName ?? ctx.customerName ?? null,
-          items: orderItems,
-          totalM2,
-          totalBoxes,
-          totalPrice: 0,
-          paymentMethod: session.paymentMethod ?? 'transfer',
-          shippingMethod: normMethod,
-          shippingAddress: session.address ?? null,
-        })
-
-        if (!orderResult.ok) {
-          await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Hubo un error al crear tu pedido. Por favor hablanos con un asesor.')
-          return NextResponse.json({ ok: true })
-        }
-
-        ctx.state = 'closed'
-        ctx.activeOrderId = orderResult.orderId
-        ctx.lastOrderId = orderResult.orderId
-
-        // Guardar nombre si lo obtuvimos durante el checkout
-        if (session.customerName && session.customerName !== ctx.customerName) {
-          await sb.from('customers').update({ full_name: session.customerName }).eq('id', ctx.customerId)
-        }
-
-        const confirmMsg =
-          `✅ ¡Pedido #${orderResult.orderNumber} confirmado!` +
-          (session.shippingMethod === 'pickup'
-            ? '\n\n📦 Te avisamos cuando esté listo para retirar. Retirás por:\n📍 Camino General Belgrano 8093, Gutiérrez, Berazategui\n📍 Calle 1278 N° 743, Ingeniero Allan, Florencio Varela'
-            : '\n\n📦 Te vamos a informar cuando esté en camino.')
-
-        await updateContext(conversationId, ctx)
-        await saveMessage(conversationId, 'outbound', confirmMsg)
-        await evoSend(phone, confirmMsg)
-        return NextResponse.json({ ok: true })
-      }
-
-      // ── Cancel ─────────────────────────────────────────────
-      if (result.action?.type === 'cancel') {
+      // BUG 1: completed sin activeOrderId → reset and continue to normal flow
+      if (ctx.state === 'completed' && !ctx.activeOrderId) {
+        console.log('[WEBHOOK] checkout completed but no activeOrderId, resetting')
         ctx.state = 'idle'
         ctx.checkoutItems = undefined
         ctx.checkoutName = undefined
         ctx.checkoutShippingMethod = undefined
         ctx.checkoutAddress = undefined
         ctx.checkoutPaymentMethod = undefined
+        // Don't return — falls through to normal flow below this if block
+      } else {
+        console.log('[WEBHOOK] entering checkout flow, text:', text.slice(0, 50))
 
-        if (result.response) {
-          appendHistory(ctx, text, result.response)
-          await saveMessage(conversationId, 'outbound', result.response)
-          await evoSend(phone, result.response)
+        // Rebuild session from ctx
+        const session: CheckoutSession = {
+          state: ctx.state as CheckoutState,
+          items: ctx.checkoutItems ?? [],
+          customerName: ctx.checkoutName ?? ctx.customerName ?? undefined,
+          shippingMethod: ctx.checkoutShippingMethod as 'pickup' | 'delivery' | undefined,
+          address: ctx.checkoutAddress ?? undefined,
+          paymentMethod: ctx.checkoutPaymentMethod as 'cash' | 'transfer' | undefined,
         }
+
+        const result = processCheckoutMessage(text, session)
+
+        // Persist session back to ctx
+        ctx.state = result.session.state
+        ctx.checkoutItems = result.session.items
+        ctx.checkoutName = result.session.customerName
+        ctx.checkoutShippingMethod = result.session.shippingMethod
+        ctx.checkoutAddress = result.session.address
+        ctx.checkoutPaymentMethod = result.session.paymentMethod
+
+        // ── Send payment info (transfer method) ────────────────
+        if (result.action?.type === 'send_payment_info') {
+          const paySettings = await getStorePaymentSettings(sb)
+          const bankMsg = paySettings
+            ? formatPaymentSettings(paySettings)
+            : '⚠️ No hay una cuenta bancaria configurada actualmente. Por favor hablanos con un asesor.'
+
+          if (result.response) {
+            appendHistory(ctx, text, result.response)
+            await saveMessage(conversationId, 'outbound', result.response)
+            await evoSend(phone, result.response)
+          }
+          await saveMessage(conversationId, 'outbound', bankMsg)
+          await evoSend(phone, bankMsg)
+          await updateContext(conversationId, ctx)
+          return NextResponse.json({ ok: true })
+        }
+
+        // ── Create order (confirmed) ───────────────────────────
+        if (result.action?.type === 'create_order') {
+          if (!ctx.customerId) {
+            await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Error: no se encontró el cliente')
+            return NextResponse.json({ ok: true })
+          }
+
+          const orderItems = session.items.map(item => ({
+            product_name: item.productName,
+            m2: item.m2 ?? 0,
+            boxes: item.quantity,
+            price_per_m2: 0,
+            total: 0,
+          }))
+          const totalM2 = session.items.reduce((sum, i) => sum + (i.m2 ?? 0), 0)
+          const totalBoxes = session.items.reduce((sum, i) => sum + i.quantity, 0)
+
+          const normMethod = session.shippingMethod === 'shipping' ? 'delivery' : (session.shippingMethod ?? 'pickup')
+          const orderResult = await createOrder({
+            customerId: ctx.customerId,
+            customerPhone: ctx.phone ?? phone,
+            customerName: session.customerName ?? ctx.customerName ?? null,
+            items: orderItems,
+            totalM2,
+            totalBoxes,
+            totalPrice: 0,
+            paymentMethod: session.paymentMethod ?? 'transfer',
+            shippingMethod: normMethod,
+            shippingAddress: session.address ?? null,
+          })
+
+          if (!orderResult.ok) {
+            await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Hubo un error al crear tu pedido. Por favor hablanos con un asesor.')
+            return NextResponse.json({ ok: true })
+          }
+
+          ctx.state = 'closed'
+          ctx.activeOrderId = orderResult.orderId
+          ctx.lastOrderId = orderResult.orderId
+
+          // Guardar nombre si lo obtuvimos durante el checkout
+          if (session.customerName && session.customerName !== ctx.customerName) {
+            await sb.from('customers').update({ full_name: session.customerName }).eq('id', ctx.customerId)
+          }
+
+          const confirmMsg =
+            `✅ ¡Pedido #${orderResult.orderNumber} confirmado!` +
+            (session.shippingMethod === 'pickup'
+              ? '\n\n📦 Te avisamos cuando esté listo para retirar. Retirás por:\n📍 Camino General Belgrano 8093, Gutiérrez, Berazategui\n📍 Calle 1278 N° 743, Ingeniero Allan, Florencio Varela'
+              : '\n\n📦 Te vamos a informar cuando esté en camino.')
+
+          await updateContext(conversationId, ctx)
+          await saveMessage(conversationId, 'outbound', confirmMsg)
+          await evoSend(phone, confirmMsg)
+          return NextResponse.json({ ok: true })
+        }
+
+        // ── Cancel ─────────────────────────────────────────────
+        if (result.action?.type === 'cancel') {
+          ctx.state = 'idle'
+          ctx.checkoutItems = undefined
+          ctx.checkoutName = undefined
+          ctx.checkoutShippingMethod = undefined
+          ctx.checkoutAddress = undefined
+          ctx.checkoutPaymentMethod = undefined
+
+          if (result.response) {
+            appendHistory(ctx, text, result.response)
+            await saveMessage(conversationId, 'outbound', result.response)
+            await evoSend(phone, result.response)
+          }
+          await updateContext(conversationId, ctx)
+          return NextResponse.json({ ok: true })
+        }
+
+        // ── No action — just the state machine response ─────────
+        appendHistory(ctx, text, result.response)
+        await saveMessage(conversationId, 'outbound', result.response)
+        await evoSend(phone, result.response)
         await updateContext(conversationId, ctx)
         return NextResponse.json({ ok: true })
       }
-
-      // ── No action — just the state machine response ─────────
-      appendHistory(ctx, text, result.response)
-      await saveMessage(conversationId, 'outbound', result.response)
-      await evoSend(phone, result.response)
-      await updateContext(conversationId, ctx)
-      return NextResponse.json({ ok: true })
     }
 
     // ┌────────────────────────────────────────────────────────────┐
