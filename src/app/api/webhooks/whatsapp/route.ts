@@ -87,7 +87,7 @@ function buildOrderDescription(o: any, index: number): string {
 
 export async function POST(req: NextRequest) {
   const __start = Date.now()
-  let ctx!: BotContext
+  let ctx: BotContext | null = null
   let conversationId: string | undefined
 
   try {
@@ -685,9 +685,9 @@ export async function POST(req: NextRequest) {
     console.error('[WhatsApp Webhook]', err)
     return NextResponse.json({ error: String(err) }, { status: 500 })
   } finally {
-    if (conversationId) {
+    if (conversationId && ctx) {
       releaseConversationLock(ctx)
-      await updateContext(conversationId, ctx).catch(() => {})
+      await updateContext(conversationId, ctx as BotContext).catch(() => {})
     }
   }
 }
