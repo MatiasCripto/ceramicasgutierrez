@@ -117,7 +117,7 @@ function OrdersInner() {
             <tbody>
               {filtered.map((o: any) => (
                 <tr key={o?.id ?? Math.random()} className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors" style={{ borderColor: 'var(--border)' }}
-                  onClick={() => { if (o?.id) window.location.href = `/orders/${o.id}` }}
+                  onClick={() => { if (o?.id) window.location.href = `/dashboard/orders/${o.id}` }}
                 >
                   <td className="px-4 py-3 font-medium">#{o?.id?.slice(0, 8) ?? '—'}</td>
                   <td className="px-4 py-3">{o?.customer_name || o?.customer_phone || '—'}</td>
