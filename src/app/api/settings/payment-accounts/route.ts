@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { requireAuth } from '@/lib/auth/require-org'
 
-function createCookieClient(req: NextRequest) {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return req.cookies.getAll() },
-        setAll() { /* read-only */ },
-      },
-    },
-  )
+function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY not configured')
+  }
+  return createClient(url, serviceKey, { auth: { persistSession: false } })
 }
 
 export async function GET(req: NextRequest) {
@@ -20,7 +16,7 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
 
-    const sb = createCookieClient(req)
+    const sb = createAdminClient()
     const { data, error } = await sb.from('payment_accounts')
       .select('*')
       .eq('is_active', true)
@@ -45,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'bank_name and account_holder are required' }, { status: 400 })
     }
 
-    const sb = createCookieClient(req)
+    const sb = createAdminClient()
 
     // Deactivate any existing active accounts
     const { error: deactivateErr } = await sb.from('payment_accounts')
@@ -100,7 +96,7 @@ export async function DELETE(req: NextRequest) {
     const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
 
-    const sb = createCookieClient(req)
+    const sb = createAdminClient()
     const { error } = await sb.from('payment_accounts')
       .update({ is_active: false })
       .eq('is_active', true)
