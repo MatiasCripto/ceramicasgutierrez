@@ -86,7 +86,7 @@ export default function CustomersPage() {
                 {customers.map(c => (
                   <tr key={c.id} className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors"
                     style={{ borderColor: 'var(--border)' }}
-                    onClick={() => window.location.href = `/customers/${c.id}`}
+                    onClick={() => window.location.href = `/dashboard/customers/${c.id}`}
                   >
                     <td className="px-4 py-3">
                       <span className="font-medium">{c.full_name}</span>

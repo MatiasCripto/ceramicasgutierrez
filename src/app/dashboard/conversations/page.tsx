@@ -1,8 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { MessageSquare, Phone, Globe } from 'lucide-react'
 import { formatRelative } from '@/lib/utils/formatters'
 
@@ -27,7 +25,7 @@ interface ConvRow {
   last_message_at: string | null
   created_at: string
   customer: { full_name: string; phone: string | null } | null
-  messages: { body: string }[] | null
+  messages: { body: string; created_at: string }[] | null
 }
 
 export default function ConversationsPage() {
@@ -38,21 +36,12 @@ export default function ConversationsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const sb = createClient()
-        let query = sb.from('conversations')
-          .select('id, channel, status, human_takeover, last_message_at, created_at, customer:customers(full_name, phone), messages:messages(body)')
-          .order('last_message_at', { ascending: false, nullsFirst: false })
-          .limit(50)
-
-        if (filter) {
-          if (filter === 'human') query = query.eq('human_takeover', true)
-          else query = query.eq('status', filter)
-        }
-
-        const { data } = await query
-        setConvs((data ?? []) as unknown as ConvRow[])
+        const params = filter ? `?filter=${filter}` : ''
+        const res = await fetch(`/api/conversations${params}`)
+        const data = await res.json()
+        setConvs(data ?? [])
       } catch {
-        // Dev mode â€” empty state
+        // empty state
       }
       setLoading(false)
     }
@@ -95,7 +84,7 @@ export default function ConversationsPage() {
             return (
               <div key={c.id}
                 className="card card-hover p-4 flex items-start gap-4 cursor-pointer"
-                onClick={() => window.location.href = `/conversations/${c.id}`}
+                onClick={() => window.location.href = `/dashboard/conversations/${c.id}`}
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                   style={{ background: 'var(--brand-subtle)', color: 'var(--brand)' }}
@@ -138,4 +127,3 @@ export default function ConversationsPage() {
     </div>
   )
 }
-

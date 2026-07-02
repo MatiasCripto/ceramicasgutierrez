@@ -1,62 +1,81 @@
 'use client'
 
-import { useAuthContext } from '@/lib/hooks/auth-context'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Phone, Mail, MapPin, ShoppingBag, DollarSign, Clock } from 'lucide-react'
-import { formatCurrency, formatDate, formatRelative, getRfmConfig } from '@/lib/utils/formatters'
-import type { Customer, Order, CustomerScore } from '@/lib/types'
+import { useParams, useRouter } from 'next/navigation'
+import { ArrowLeft, User, Phone, MapPin, Mail, ShoppingBag, DollarSign, Clock } from 'lucide-react'
+import { formatCurrency, formatDate, STATUS_LABELS, PAYMENT_LABELS, SHIPPING_LABELS } from '@/lib/utils/formatters'
+
+interface Order {
+  id: string
+  status: string
+  total_price: number
+  total_m2: number
+  total_boxes: number
+  payment_method: string
+  shipping_method: string
+  created_at: string
+}
+
+interface CustomerData {
+  id: string
+  full_name: string
+  phone: string | null
+  email: string | null
+  address: string | null
+  total_orders: number
+  lifetime_value: number
+  last_order_at: string | null
+  created_at: string
+  notes: string | null
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: '#f59e0b',
+  confirmed: '#3b82f6',
+  paid: '#10b981',
+  preparing: '#6366f1',
+  completed: '#10b981',
+  cancelled: '#ef4444',
+  refunded: '#f59e0b',
+}
 
 export default function CustomerDetailPage() {
   const params = useParams()
-  const [customer, setCustomer] = useState<Customer | null>(null)
+  const router = useRouter()
+  const [customer, setCustomer] = useState<CustomerData | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
-  const [score, setScore] = useState<CustomerScore | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!params.id) return
-    async function load() {
-      try {
-        const sb = createClient()
-        const { data: c } = await sb.from('customers')
-          .select('*').eq('id', params.id as string).single()
-        if (c) {
-          setCustomer(c as Customer)
-          const { data: o } = await sb.from('orders')
-            .select('id, status, total, created_at')
-            .eq('customer_id', c.id)
-            .order('created_at', { ascending: false }).limit(20)
-          setOrders((o ?? []) as Order[])
-          const { data: s } = await sb.from('customer_scores')
-            .select('*').eq('customer_id', c.id).single()
-          setScore(s as CustomerScore | null)
+    fetch(`/api/customers/${params.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.customer) {
+          setCustomer(data.customer)
+          setOrders(data.orders ?? [])
         }
-      } catch {
-        // dev mode — Supabase not available
-      }
-      setLoading(false)
-    }
-    load()
+      })
+      .catch(err => console.error('[CUSTOMER] fetch error:', err))
+      .finally(() => setLoading(false))
   }, [params.id])
 
   if (loading) return <div className="text-sm" style={{ color: 'var(--muted)' }}>Cargando...</div>
   if (!customer) return <div className="text-sm" style={{ color: 'var(--muted)' }}>Cliente no encontrado</div>
 
-  const rfmCfg = score ? getRfmConfig(score.rfm_segment) : null
-
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <a href="/customers" className="p-2 rounded-[var(--radius-md)] hover:bg-[var(--surface-2)] transition-colors"
+        <button onClick={() => router.push('/dashboard/customers')}
+          className="p-2 rounded-[var(--radius-md)] hover:bg-[var(--surface-2)] transition-colors"
           style={{ color: 'var(--muted)' }}>
           <ArrowLeft size={18} />
-        </a>
+        </button>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
             style={{ background: 'var(--brand)' }}>
-            {customer.full_name.charAt(0).toUpperCase()}
+            {customer.full_name?.charAt(0)?.toUpperCase() ?? '?'}
           </div>
           <div>
             <h1 className="text-xl font-semibold">{customer.full_name}</h1>
@@ -87,23 +106,29 @@ export default function CustomerDetailPage() {
             </div>
           )}
         </div>
+        {customer.notes && (
+          <div className="mt-3 pt-3 border-t text-xs" style={{ borderColor: 'var(--border)' }}>
+            <span style={{ color: 'var(--subtle)' }}>Notas:</span>
+            <p className="mt-0.5">{customer.notes}</p>
+          </div>
+        )}
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-1">
             <ShoppingBag size={14} style={{ color: 'var(--brand)' }} />
             <span className="text-xs" style={{ color: 'var(--muted)' }}>Órdenes</span>
           </div>
-          <p className="text-xl font-bold">{customer.total_orders}</p>
+          <p className="text-xl font-bold">{customer.total_orders ?? 0}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign size={14} style={{ color: 'var(--success)' }} />
             <span className="text-xs" style={{ color: 'var(--muted)' }}>Gasto Total</span>
           </div>
-          <p className="text-xl font-bold">{formatCurrency(customer.lifetime_value)}</p>
+          <p className="text-xl font-bold">{formatCurrency(customer.lifetime_value ?? 0)}</p>
         </div>
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-1">
@@ -111,55 +136,10 @@ export default function CustomerDetailPage() {
             <span className="text-xs" style={{ color: 'var(--muted)' }}>Última compra</span>
           </div>
           <p className="text-xl font-bold text-sm">
-            {customer.last_order_at ? formatRelative(customer.last_order_at) : 'Nunca'}
+            {customer.last_order_at ? formatDate(customer.last_order_at) : 'Nunca'}
           </p>
         </div>
-        <div className="card p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs" style={{ color: rfmCfg?.color ?? 'var(--muted)' }}>RFM</span>
-            <span className="text-xs" style={{ color: 'var(--muted)' }}>Segmento</span>
-          </div>
-          {score ? (
-            <p className="text-sm font-bold" style={{ color: rfmCfg?.color }}>{rfmCfg?.label}</p>
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--subtle)' }}>Sin datos</p>
-          )}
-        </div>
       </div>
-
-      {/* RFM detail */}
-      {score && (
-        <div className="card p-4">
-          <h2 className="font-semibold text-sm mb-3">Análisis RFM</h2>
-          <div className="grid grid-cols-3 gap-4 text-xs">
-            <div>
-              <span style={{ color: 'var(--subtle)' }}>Recencia</span>
-              <p className="text-lg font-bold mt-1">{score.recency_days} días</p>
-            </div>
-            <div>
-              <span style={{ color: 'var(--subtle)' }}>Frecuencia</span>
-              <p className="text-lg font-bold mt-1">{score.frequency_score} compras</p>
-            </div>
-            <div>
-              <span style={{ color: 'var(--subtle)' }}>Ticket promedio</span>
-              <p className="text-lg font-bold mt-1">{formatCurrency(score.avg_ticket)}</p>
-            </div>
-          </div>
-          {score.preferred_categories.length > 0 && (
-            <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-              <span className="text-xs" style={{ color: 'var(--subtle)' }}>Categorías preferidas:</span>
-              <div className="flex gap-1 mt-1 flex-wrap">
-                {score.preferred_categories.map(c => (
-                  <span key={c} className="text-xs px-2 py-0.5 rounded-[var(--radius-full)]"
-                    style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Orders */}
       <div className="card overflow-hidden">
@@ -169,33 +149,49 @@ export default function CustomerDetailPage() {
         {orders.length === 0 ? (
           <div className="p-8 text-center text-sm" style={{ color: 'var(--muted)' }}>Sin pedidos</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ background: 'var(--surface-2)' }}>
-                <th className="text-left px-4 py-2 font-medium">Pedido</th>
-                <th className="text-right px-4 py-2 font-medium">Total</th>
-                <th className="text-center px-4 py-2 font-medium">Estado</th>
-                <th className="text-right px-4 py-2 font-medium">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(o => (
-                <tr key={o.id} className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors"
-                  style={{ borderColor: 'var(--border)' }}
-                  onClick={() => window.location.href = `/orders/${o.id}`}
-                >
-                  <td className="px-4 py-2 font-medium">#{o.id.slice(0, 8)}</td>
-                  <td className="px-4 py-2 text-right">{formatCurrency(o.total)}</td>
-                  <td className="px-4 py-2 text-center">
-                    <span className={`badge status-${o.status}`}>{o.status}</span>
-                  </td>
-                  <td className="px-4 py-2 text-right" style={{ color: 'var(--muted)' }}>
-                    {formatDate(o.created_at)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: 'var(--surface-2)' }}>
+                  <th className="text-left px-4 py-2 font-medium">Pedido</th>
+                  <th className="text-left px-4 py-2 font-medium">Estado</th>
+                  <th className="text-left px-4 py-2 font-medium">Pago</th>
+                  <th className="text-left px-4 py-2 font-medium">Envío</th>
+                  <th className="text-right px-4 py-2 font-medium">m²</th>
+                  <th className="text-right px-4 py-2 font-medium">Total</th>
+                  <th className="text-right px-4 py-2 font-medium">Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map(o => (
+                  <tr key={o.id}
+                    className="border-t cursor-pointer hover:bg-[var(--surface-2)] transition-colors"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => router.push(`/dashboard/orders/${o.id}`)}
+                  >
+                    <td className="px-4 py-2 font-medium">#{o.id?.slice(0, 8)}</td>
+                    <td className="px-4 py-2">
+                      <span className="text-xs px-2 py-0.5 rounded-[var(--radius-full)] font-medium"
+                        style={{ background: STATUS_COLORS[o.status] + '20', color: STATUS_COLORS[o.status] }}>
+                        {STATUS_LABELS[o.status] ?? o.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2" style={{ color: 'var(--muted)' }}>
+                      {PAYMENT_LABELS[o.payment_method] ?? o.payment_method ?? '—'}
+                    </td>
+                    <td className="px-4 py-2" style={{ color: 'var(--muted)' }}>
+                      {SHIPPING_LABELS[o.shipping_method] ?? o.shipping_method ?? '—'}
+                    </td>
+                    <td className="px-4 py-2 text-right">{o.total_m2?.toFixed(2) ?? '—'}</td>
+                    <td className="px-4 py-2 text-right font-medium">{formatCurrency(o.total_price ?? 0)}</td>
+                    <td className="px-4 py-2 text-right" style={{ color: 'var(--muted)' }}>
+                      {formatDate(o.created_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
