@@ -10,9 +10,6 @@ const ORDER_SELECT = `
 `
 
 export async function GET(req: NextRequest) {
-  const auth = await requireAuth(req)
-  if (!auth.authorized) return auth.response
-
   const customerId = req.nextUrl.searchParams.get('customer_id')
   const status = req.nextUrl.searchParams.get('status')
 
