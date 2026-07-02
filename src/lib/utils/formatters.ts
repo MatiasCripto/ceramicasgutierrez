@@ -37,6 +37,48 @@ export function formatRelative(date: string | Date): string {
   return `${days}d`
 }
 
-export const getOrderStatusConfig = () => ({})
-export const getPaymentStatusConfig = () => ({})
-export const getRfmConfig = () => ({})
+export const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  pending:         { bg: '#fef3c7', color: '#92400e' },
+  confirmed:       { bg: '#dbeafe', color: '#1e40af' },
+  paid:            { bg: '#d1fae5', color: '#065f46' },
+  preparing:       { bg: '#e0e7ff', color: '#3730a3' },
+  completed:       { bg: '#d1fae5', color: '#065f46' },
+  cancelled:       { bg: '#fee2e2', color: '#991b1b' },
+  refunded:        { bg: '#fef3c7', color: '#92400e' },
+}
+
+export const STATUS_LABELS: Record<string, string> = {
+  pending:   'Pendiente',
+  confirmed: 'Confirmado',
+  paid:      'Pagado',
+  preparing: 'Preparando',
+  completed: 'Completado',
+  cancelled: 'Cancelado',
+  refunded:  'Reembolsado',
+}
+
+export const PAYMENT_LABELS: Record<string, string> = {
+  cash:       'Efectivo',
+  transfer:   'Transferencia',
+  pending:    'Pendiente',
+  paid:       'Pagado',
+  failed:     'Fallido',
+  refunded:   'Reembolsado',
+}
+
+export const SHIPPING_LABELS: Record<string, string> = {
+  pickup:   'Retiro en local',
+  delivery: 'Envío a domicilio',
+}
+
+export function getOrderStatusConfig(status: string) {
+  return STATUS_STYLES[status] ?? { bg: '#f3f4f6', color: '#6b7280' }
+}
+
+export function getPaymentStatusConfig(status: string) {
+  return STATUS_STYLES[status] ?? { bg: '#f3f4f6', color: '#6b7280' }
+}
+
+export function getRfmConfig() {
+  return {}
+}
