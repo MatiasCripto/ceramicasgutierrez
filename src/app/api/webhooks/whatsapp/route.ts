@@ -9,23 +9,22 @@ import { getProductImages, sendProductImages } from '@/lib/bot/product-images'
 import {
   getOrCreateConversation, saveMessage, updateContext,
   fetchProducts, fetchCustomerOrders, fetchCustomerHistory,
-  handleCheckout, resolveCeramicProduct,
+  resolveCeramicProduct,
   acquireConversationLock, releaseConversationLock,
 } from '@/lib/bot/conversation-engine'
 import { generateAiResponse } from '@/lib/bot/ai-chat'
 import {
-  initCheckout, processCheckoutMessage, AI_GENERATE,
-  buildCheckoutContext,
+  initCheckout, processCheckoutMessage,
 } from '@/lib/bot/checkout-machine'
 import { buildProductPresentation } from '@/lib/bot/product-emoji-map'
 import { getStorePaymentSettings, formatPaymentSettings } from '@/lib/bot/payment-service'
-import { addItemsToOrder, removeItemsFromOrder, canEditOrder } from '@/lib/bot/order-service'
+import { addItemsToOrder, removeItemsFromOrder, canEditOrder, createOrder } from '@/lib/bot/order-service'
 import { validateWebhookPayload } from './validators/payload.validator'
 import { handleMediaMessage } from './handlers/media.handler'
-import type { CheckoutState } from '@/lib/bot/checkout-machine'
+import type { CheckoutState, CheckoutSession } from '@/lib/bot/checkout-machine'
 import type { EvolutionMessageData, BotContext } from '@/lib/types/whatsapp.types'
 
-const CHECKOUT_STATES: Set<string> = new Set(['name', 'dni', 'shipping', 'address', 'payment_method', 'payment_waiting_proof', 'confirm', 'completed'])
+const CHECKOUT_STATES: Set<string> = new Set(['name', 'shipping', 'payment_method', 'confirm', 'completed'])
 const LEGACY_STATES: Set<string> = new Set(['checkout', 'checkout_completed'])
 
 function isCheckoutState(s: string): boolean {
@@ -160,151 +159,120 @@ export async function POST(req: NextRequest) {
 
     if (isCheckoutState(ctx.state)) {
       console.log('[WEBHOOK] entering checkout flow, text:', text.slice(0, 50))
-      const session: import('@/lib/bot/checkout-machine').CheckoutSession = {
+
+      // Rebuild session from ctx
+      const session: CheckoutSession = {
         state: ctx.state as CheckoutState,
         items: ctx.checkoutItems ?? [],
         customerName: ctx.checkoutName ?? ctx.customerName ?? undefined,
-        dni: ctx.checkoutDni ?? undefined,
-        shippingMethod: (ctx.checkoutShippingMethod ?? undefined) as 'shipping' | 'pickup' | undefined,
+        shippingMethod: ctx.checkoutShippingMethod as 'pickup' | 'delivery' | undefined,
         address: ctx.checkoutAddress ?? undefined,
-        locality: ctx.checkoutLocality ?? undefined,
-        references: ctx.checkoutReferences ?? undefined,
-        pickup: ctx.checkoutPickup ?? false,
-        paymentMethod: (ctx.checkoutPaymentMethod ?? undefined) as 'transfer' | 'cash_on_delivery' | 'pickup_payment' | undefined,
-        storeName: 'el showroom en Gutiérrez',
+        paymentMethod: ctx.checkoutPaymentMethod as 'cash' | 'transfer' | undefined,
       }
 
       const result = processCheckoutMessage(text, session)
 
-      // Persist session
+      // Persist session back to ctx
       ctx.state = result.session.state
       ctx.checkoutItems = result.session.items
       ctx.checkoutName = result.session.customerName
-      ctx.checkoutDni = result.session.dni
       ctx.checkoutShippingMethod = result.session.shippingMethod
       ctx.checkoutAddress = result.session.address
-      ctx.checkoutLocality = result.session.locality
-      ctx.checkoutReferences = result.session.references
-      ctx.checkoutPickup = result.session.pickup
       ctx.checkoutPaymentMethod = result.session.paymentMethod
 
-      // ── Transfer: create order, send bank data ────────────────
-      if (result.session.state === 'payment_waiting_proof' && !ctx.activeOrderId) {
-        if (!ctx.customerId) {
-          await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Error: no se encontró el cliente')
-          return NextResponse.json({ ok: true })
-        }
-
-        const checkoutResult = await handleCheckout(sb, ctx.customerId, phone, ctx.customerName, {
-          items: session.items,
-          shippingMethod: session.shippingMethod === 'shipping' ? 'delivery' : 'pickup',
-          address: session.address,
-          customerName: session.customerName,
-        })
-
-        if (!checkoutResult.ok) {
-          ctx.state = 'closed'
-          await updateContext(conversationId, ctx)
-          await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Hubo un error al crear tu pedido. Por favor hablanos con un asesor.')
-          return NextResponse.json({ ok: true })
-        }
-
-        ctx.activeOrderId = checkoutResult.orderId
-
-        // Enviar datos bancarios
+      // ── Send payment info (transfer method) ────────────────
+      if (result.action?.type === 'send_payment_info') {
         const paySettings = await getStorePaymentSettings(sb)
         const bankMsg = paySettings
           ? formatPaymentSettings(paySettings)
           : '⚠️ No hay una cuenta bancaria configurada actualmente. Por favor hablanos con un asesor.'
 
-        await updateContext(conversationId, ctx)
+        if (result.response) {
+          appendHistory(ctx, text, result.response)
+          await saveMessage(conversationId, 'outbound', result.response)
+          await evoSend(phone, result.response)
+        }
         await saveMessage(conversationId, 'outbound', bankMsg)
         await evoSend(phone, bankMsg)
+        await updateContext(conversationId, ctx)
         return NextResponse.json({ ok: true })
       }
 
-      // ── Checkout complete → execute order ────────────────────
-      if (result.action?.type === 'checkout') {
+      // ── Create order (confirmed) ───────────────────────────
+      if (result.action?.type === 'create_order') {
         if (!ctx.customerId) {
           await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Error: no se encontró el cliente')
           return NextResponse.json({ ok: true })
         }
 
-        const paymentMethod = session.paymentMethod ?? ctx.checkoutPaymentMethod
-        const checkoutResult = await handleCheckout(sb, ctx.customerId, phone, ctx.customerName, {
-          items: session.items,
-          shippingMethod: session.pickup ? 'pickup' : 'delivery',
-          address: session.address,
-          customerName: session.customerName,
+        const orderItems = session.items.map(item => ({
+          product_name: item.productName,
+          m2: item.m2 ?? 0,
+          boxes: item.quantity,
+          price_per_m2: 0,
+          total: 0,
+        }))
+        const totalM2 = session.items.reduce((sum, i) => sum + (i.m2 ?? 0), 0)
+        const totalBoxes = session.items.reduce((sum, i) => sum + i.quantity, 0)
+
+        const orderResult = await createOrder({
+          customerId: ctx.customerId,
+          customerPhone: ctx.phone ?? phone,
+          customerName: session.customerName ?? ctx.customerName ?? null,
+          items: orderItems,
+          totalM2,
+          totalBoxes,
+          totalPrice: 0,
+          paymentMethod: session.paymentMethod ?? 'transfer',
+          shippingMethod: session.shippingMethod ?? 'pickup',
+          shippingAddress: session.address ?? null,
         })
 
-        if (checkoutResult.ok) {
-          await sb.from('orders').update({
-            payment_method: paymentMethod ?? null,
-          }).eq('id', checkoutResult.orderId)
-
-          // Actualizar datos del cliente
-          await sb.from('customers').update({
-            full_name: session.customerName,
-          }).eq('id', ctx.customerId)
-
-          ctx.state = 'closed'
-          ctx.activeOrderId = checkoutResult.orderId
-          ctx.lastOrderId = checkoutResult.orderId
-          await updateContext(conversationId, ctx)
-
-          const itemsDisplay = checkoutResult.itemsSummary
-            ? '\n\n' + checkoutResult.itemsSummary
-            : ''
-          const confirmMsg =
-            `✅ ¡Pedido #${checkoutResult.orderNumber} confirmado!${itemsDisplay}` +
-            `\n\n💰 Total: $${checkoutResult.total?.toFixed(2)}` +
-            (session.pickup
-              ? '\n\n📦 Te avisamos cuando esté listo para retirar.'
-              : '\n\n📦 Te vamos a informar cuando esté en camino.')
-
-          await saveMessage(conversationId, 'outbound', confirmMsg)
-          await evoSend(phone, confirmMsg)
-          await updateContext(conversationId, ctx)
-          return NextResponse.json({ ok: true })
-        } else {
-          ctx.state = 'closed'
-          await updateContext(conversationId, ctx)
+        if (!orderResult.ok) {
           await sendError(evoSend, saveMessage, updateContext, conversationId, ctx, 'Hubo un error al crear tu pedido. Por favor hablanos con un asesor.')
           return NextResponse.json({ ok: true })
         }
-      }
 
-      // ── Human handoff ───────────────────────────────────────
-      if (result.action?.type === 'human_handoff') {
-        ctx.state = 'human_handoff'
-        await sb.from('conversations').update({ status: 'human', human_takeover: true }).eq('id', conversationId)
-        const handoffMsg = 'Te paso con alguien del equipo para ayudarte.'
-        await saveMessage(conversationId, 'outbound', handoffMsg)
-        await evoSend(phone, handoffMsg)
-        await updateContext(conversationId, ctx)
-        return NextResponse.json({ ok: true })
-      }
+        ctx.state = 'closed'
+        ctx.activeOrderId = orderResult.orderId
+        ctx.lastOrderId = orderResult.orderId
 
-      // ── AI-generated response during checkout ──────────────
-      if (result.response === AI_GENERATE) {
-        const checkoutSummary = buildCheckoutContext(session)
-        const aiCtx: Record<string, any> = {
-          customerName: ctx.customerName,
-          checkoutState: result.session.state,
-          checkoutData: checkoutSummary || undefined,
-          history: ctx.history ?? [],
+        // Guardar nombre si lo obtuvimos durante el checkout
+        if (session.customerName && session.customerName !== ctx.customerName) {
+          await sb.from('customers').update({ full_name: session.customerName }).eq('id', ctx.customerId)
         }
-        const aiResponse = await generateAiResponse(text, aiCtx)
-        const replyText = aiResponse?.message ?? 'Entendido. Sigamos con el pedido.'
-        appendHistory(ctx, text, replyText)
-        await saveMessage(conversationId, 'outbound', replyText)
-        await evoSend(phone, replyText)
+
+        const confirmMsg =
+          `✅ ¡Pedido #${orderResult.orderNumber} confirmado!` +
+          (session.shippingMethod === 'pickup'
+            ? '\n\n📦 Te avisamos cuando esté listo para retirar. Retirás por:\n📍 Camino General Belgrano 8093, Gutiérrez, Berazategui\n📍 Calle 1278 N° 743, Ingeniero Allan, Florencio Varela'
+            : '\n\n📦 Te vamos a informar cuando esté en camino.')
+
+        await updateContext(conversationId, ctx)
+        await saveMessage(conversationId, 'outbound', confirmMsg)
+        await evoSend(phone, confirmMsg)
+        return NextResponse.json({ ok: true })
+      }
+
+      // ── Cancel ─────────────────────────────────────────────
+      if (result.action?.type === 'cancel') {
+        ctx.state = 'idle'
+        ctx.checkoutItems = undefined
+        ctx.checkoutName = undefined
+        ctx.checkoutShippingMethod = undefined
+        ctx.checkoutAddress = undefined
+        ctx.checkoutPaymentMethod = undefined
+
+        if (result.response) {
+          appendHistory(ctx, text, result.response)
+          await saveMessage(conversationId, 'outbound', result.response)
+          await evoSend(phone, result.response)
+        }
         await updateContext(conversationId, ctx)
         return NextResponse.json({ ok: true })
       }
 
-      // ── Direct response from state machine ──────────────────
+      // ── No action — just the state machine response ─────────
       appendHistory(ctx, text, result.response)
       await saveMessage(conversationId, 'outbound', result.response)
       await evoSend(phone, result.response)
@@ -459,29 +427,12 @@ export async function POST(req: NextRequest) {
         .eq('id', ctx.customerId)
         .single()
 
-      const existingData = {
-        customerName: customerData?.full_name ?? ctx.customerName ?? undefined,
-      }
+      const existingCustomerName = customerData?.full_name ?? ctx.customerName ?? null
 
-      const session = initCheckout(response.action.items ?? [], existingData)
+      const session = initCheckout(response.action.items ?? [], existingCustomerName)
       ctx.state = session.state
       ctx.checkoutItems = session.items
       ctx.checkoutName = session.customerName
-      ctx.checkoutDni = session.dni
-      ctx.checkoutShippingMethod = session.shippingMethod
-      ctx.checkoutAddress = session.address
-      ctx.checkoutPickup = session.pickup
-
-      if (session.state === 'confirm') {
-        const confirmMsg =
-          `Perfecto. Confirmamos:\n\n` +
-          session.items.map(i => buildProductPresentation(i.productName, i.quantity)).join('\n') +
-          `\n\n¿Está todo bien para generar el pedido?`
-        await saveMessage(conversationId, 'outbound', confirmMsg)
-        await evoSend(phone, confirmMsg)
-        await updateContext(conversationId, ctx)
-        return NextResponse.json({ ok: true })
-      }
 
       const firstQuestion = getFirstQuestion(session.state)
       await saveMessage(conversationId, 'outbound', firstQuestion)
@@ -740,10 +691,8 @@ async function sendError(
 function getFirstQuestion(state: string): string {
   switch (state) {
     case 'name': return 'Perfecto, ¿me decís tu nombre completo?'
-    case 'dni': return 'Gracias. ¿Cuál es tu DNI?'
     case 'shipping': return '¿Cómo preferís recibirlo? ¿Envío a domicilio o retiro por el showroom en Gutiérrez?'
-    case 'address': return '¿Cuál es tu dirección completa? Incluí localidad si querés.'
-    case 'payment_method': return '¿Cómo preferís pagar? ¿Transferencia bancaria o efectivo contra entrega?'
+    case 'payment_method': return '¿Cómo preferís pagar? ¿Efectivo o transferencia bancaria?'
     default: return 'Decime, ¿qué más necesitás?'
   }
 }

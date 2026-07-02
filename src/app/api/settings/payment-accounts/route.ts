@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireOrgAccess } from '@/lib/auth/require-org'
+import { requireAuth } from '@/lib/auth/require-org'
+
+async function getOrgId() {
+  const sb = createServiceClient()
+  const { data } = await sb.from('organizations').select('id').limit(1).single()
+  return data?.id ?? null
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireOrgAccess(req)
+    const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = auth.orgId
+    const orgId = await getOrgId()
+    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const sb = createServiceClient()
     const { data, error } = await sb.from('payment_accounts')
@@ -24,17 +31,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireOrgAccess(req)
+    const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = auth.orgId
+    const orgId = await getOrgId()
+    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const body = await req.json()
     const { bank_name, account_holder, alias, cvu, payment_method, currency, priority, instructions, is_default } = body
     if (!bank_name || !account_holder) {
       return NextResponse.json({ error: 'bank_name and account_holder are required' }, { status: 400 })
     }
-
-    console.log('[SAVE_PAYMENT_ACCOUNT]', { bank_name, account_holder, alias, cvu, payment_method, currency, priority, orgId })
 
     const sb = createServiceClient()
 
@@ -84,12 +90,6 @@ export async function POST(req: NextRequest) {
       result = data; lastError = error
     }
 
-    console.log('[SAVE_RESULT]', {
-      saved: result ? { id: (result as any).id, bank_name: (result as any).bank_name, organization_id: (result as any).organization_id, is_active: (result as any).is_active } : null,
-      error: lastError?.message || lastError || null,
-      orgId,
-    })
-
     return NextResponse.json(result)
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
@@ -98,9 +98,10 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = await requireOrgAccess(req)
+    const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
-    const orgId = auth.orgId
+    const orgId = await getOrgId()
+    if (!orgId) return NextResponse.json({ error: 'No organization' }, { status: 500 })
 
     const sb = createServiceClient()
     await sb.from('payment_accounts')

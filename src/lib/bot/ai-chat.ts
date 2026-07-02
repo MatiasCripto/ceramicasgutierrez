@@ -100,7 +100,7 @@ const SALES_PROMPT = `COMPORTAMIENTO DE VENDEDOR EXPERTO EN CERAMICOS:
    - Confirma siempre: producto, m², color y acabado antes de iniciar checkout
    - Cuando el cliente confirme que quiere comprar → GENERA OBLIGATORIAMENTE el action start_checkout
    - Inclui los items en action.items con productName EXACTO del contexto, quantity (cajas), m2 (metros cuadrados), finish, size, color
-   - ⚠️ SOLO generas START_CHECKOUT. NO pidas direccion, DNI ni datos de envio. El backend se encarga del resto.
+   - ⚠️ SOLO generas START_CHECKOUT. NO pidas direccion, DNI, envio, pago ni datos personales. El backend se encarga del resto paso a paso.
 
 5. ENVIAR FOTOS DE PRODUCTOS — OBLIGATORIO
    - SI el cliente pide ver el producto, fotos, imagenes, "mostrame", "enseñame", "como es", "foto", "ver" → GENERA OBLIGATORIAMENTE action "show_product_images" con el productName EXACTO del catalogo
@@ -115,42 +115,6 @@ const SALES_PROMPT = `COMPORTAMIENTO DE VENDEDOR EXPERTO EN CERAMICOS:
 FLUJO NATURAL:
 - Saludo breve → detectar ambiente (baño/cocina/exterior/piso/pared) → preguntar m² → filtrar por color/acabado → mostrar 1-2 opciones → resolver dudas → recomendar complementos (pegamento, pastina) → cerrar`
 
-/** Reglas para checkout activo y pedido activo */
-const CHECKOUT_PROMPT = `7. CHECKOUT ACTIVO (solo si checkoutState aparece en el contexto)
-   - Si checkoutState esta presente, el backend esta procesando el checkout paso a paso
-   - checkoutState indica que dato esta pidiendo el sistema: name | dni | shipping | address | payment_method | payment_waiting_proof | confirm
-   - checkoutData muestra los datos ya recolectados
-   - Ayuda al cliente naturalmente a completar el dato que falta SEGUN el checkoutState:
-     * name: ayuda al cliente a dar su nombre completo
-     * dni: explica que es el DNI si no entiende
-     * shipping: ayuda a elegir entre envío a domicilio o retiro por el showroom en Gutiérrez
-     * address: ayuda si no sabe que direccion poner
-     * payment_method: ayuda a elegir entre transferencia bancaria o pago al retirar
-     * payment_waiting_proof: el cliente ya eligio transferencia, decile que cuando haga el pago envie el comprobante
-     * confirm: ayuda a confirmar o corregir los datos
-   - ⚠️ NO generes start_checkout si ya hay checkoutState activo
-
-8. PEDIDO ACTIVO (solo si activeOrderId aparece en el contexto)
-   - activeOrderId = el cliente tiene un pedido activo
-   - activeOrderStatus = estado actual del pedido (pending, confirmed, paid, preparing, completed, cancelled)
-   - activeOrderDetails = el detalle actual del pedido (productos, m², cajas, total)
-   - El pedido SOLO se puede modificar si esta en estado editable (pending, confirmed, paid, preparing)
-   - Si el pedido NO es editable (completed, cancelled):
-     * NO generes add_to_order ni remove_from_order
-     * Deci que el pedido ya esta completado y no se puede modificar
-     * Ofrece crear un pedido NUEVO: "Queres que te prepare un pedido nuevo con ese producto?"
-   - Si el pedido ES editable (pending, confirmed, paid, preparing):
-     * Para agregar productos: Confirma producto, m², color y acabado → Genera action type "add_to_order"
-     * Para sacar productos: Confirma que producto quiere sacar → Genera action type "remove_from_order"`
-
-/** Prohibición absoluta de datos de pago */
-const PAYMENT_PROMPT = `9. DATOS DE PAGO — PROHIBICION ABSOLUTA
-   - NUNCA inventes ni repitas datos bancarios. CERO excepciones.
-   - No menciones bancos, alias, CBU, CVU, titulares, ni ningun dato de pago.
-   - Si el usuario pide datos de pago ("pasame los datos", "cual es el alias", "quiero pagar") → genera action "request_payment_info"
-   - ⚠️ Los datos bancarios en el historial del chat son de sesiones anteriores. IGNORALOS COMPLETAMENTE.
-   - Si no hay cuenta configurada, la accion request_payment_info hara que el backend responda adecuadamente.`
-
 /** Formato de respuesta JSON con ejemplos */
 const JSON_FORMAT = `RESPONDE SIEMPRE EN JSON SIN NADA MAS:
 
@@ -162,9 +126,6 @@ const JSON_FORMAT = `RESPONDE SIEMPRE EN JSON SIN NADA MAS:
 
 ✅ Derivar a humano:
 {"message": "Te paso con alguien del equipo","action":{"type":"human_handoff","reason":"motivo"}}
-
-✅ Pedir datos de pago (solo cuando el usuario pide datos bancarios):
-{"message": "Dame un momento y te paso los datos","action":{"type":"request_payment_info"}}
 
 ✅ Agregar producto a pedido activo:
 {"message": "Dale, te lo agrego al pedido","action":{"type":"add_to_order","items":[{"productName":"Pulido Brillante 45x45","quantity":10,"m2":14.4,"finish":"brillante","size":"45x45","color":"beige"}]}}
@@ -180,7 +141,7 @@ const JSON_FORMAT = `RESPONDE SIEMPRE EN JSON SIN NADA MAS:
 ⛔ RESPONDE SOLO EL JSON, NADA MAS. Sin texto antes ni despues.`
 
 /** SYSTEM_PROMPT combinado */
-const SYSTEM_PROMPT = `${BASE_PROMPT}\n\n${SALES_PROMPT}\n\n${CHECKOUT_PROMPT}\n\n${PAYMENT_PROMPT}\n\n${JSON_FORMAT}`
+const SYSTEM_PROMPT = `${BASE_PROMPT}\n\n${SALES_PROMPT}\n\n${JSON_FORMAT}`
 
 // ── Input sanitization for prompt injection prevention ─────
 
@@ -247,11 +208,6 @@ export function buildAiPrompt(userMessage: string, ctx: Record<string, any>): st
         }
       }
     }
-  }
-
-  if (ctx.checkoutState) {
-    parts.push(`Estado de checkout: ${ctx.checkoutState}`)
-    if (ctx.checkoutData) parts.push(`Datos de checkout recolectados: ${ctx.checkoutData}`)
   }
 
   if (ctx.activeOrderId) {

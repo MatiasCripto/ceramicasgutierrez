@@ -19,12 +19,8 @@ export interface BotContext {
   // Checkout session
   checkoutItems?: any[]
   checkoutName?: string
-  checkoutDni?: string
   checkoutShippingMethod?: string
   checkoutAddress?: string
-  checkoutLocality?: string
-  checkoutReferences?: string
-  checkoutPickup?: boolean
   checkoutPaymentMethod?: string
 
   // Order disambiguation

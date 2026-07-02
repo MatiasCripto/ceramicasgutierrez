@@ -1,26 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireOrgAccess } from '@/lib/auth/require-org'
+import { requireAuth } from '@/lib/auth/require-org'
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireOrgAccess(req)
+    const auth = await requireAuth(req)
     if (!auth.authorized) return auth.response
 
     const { orgName, storeName, whatsappNumber, evolutionInstance, logoUrl } = await req.json()
     const sb = createServiceClient()
 
-    // Find the store — filtered by the authenticated user's organization
+    // Get the first/only organization (single-tenant)
+    const { data: org } = await sb.from('organizations').select('id').limit(1).single()
+    if (!org) return NextResponse.json({ error: 'No organization' }, { status: 500 })
+    const orgId = org.id
+
+    // Find the store by organization
     let storeId: string | null = null
-    let orgId: string | null = null
     if (evolutionInstance) {
-      const { data } = await sb.from('stores').select('id, organization_id').eq('evolution_instance', evolutionInstance).eq('organization_id', auth.orgId).maybeSingle()
-      if (data) { storeId = data.id; orgId = data.organization_id }
+      const { data } = await sb.from('stores').select('id').eq('evolution_instance', evolutionInstance).eq('organization_id', orgId).maybeSingle()
+      if (data) storeId = data.id
     } else {
-      const { data } = await sb.from('stores').select('id, organization_id').eq('organization_id', auth.orgId).limit(1).maybeSingle()
-      if (data) { storeId = data.id; orgId = data.organization_id }
+      const { data } = await sb.from('stores').select('id').eq('organization_id', orgId).limit(1).maybeSingle()
+      if (data) storeId = data.id
     }
-    if (!storeId || !orgId) {
+    if (!storeId) {
       return NextResponse.json({ error: 'No store found' }, { status: 404 })
     }
 

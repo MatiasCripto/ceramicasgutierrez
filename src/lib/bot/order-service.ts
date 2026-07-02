@@ -4,6 +4,75 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
 
+// ── Order creation types ────────────────────────────────────
+
+export interface CreateOrderInput {
+  customerId: string
+  customerPhone: string
+  customerName: string | null
+  items: Array<{
+    product_name: string
+    category?: string
+    color?: string
+    finish?: string
+    m2: number
+    boxes: number
+    price_per_m2: number
+    total: number
+  }>
+  totalM2: number
+  totalBoxes: number
+  totalPrice: number
+  paymentMethod: 'cash' | 'transfer'
+  shippingMethod: 'pickup' | 'delivery'
+  shippingAddress?: string | null
+}
+
+export interface CreateOrderResult {
+  ok: boolean
+  orderId?: string
+  orderNumber?: string
+  total?: number
+  error?: string
+}
+
+export async function createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
+  const sb = createServiceClient()
+  const { data, error } = await sb.from('orders').insert({
+    customer_id: input.customerId,
+    customer_phone: input.customerPhone,
+    customer_name: input.customerName,
+    items: input.items,
+    total_m2: input.totalM2,
+    total_boxes: input.totalBoxes,
+    total_price: input.totalPrice,
+    payment_method: input.paymentMethod,
+    shipping_method: input.shippingMethod,
+    shipping_address: input.shippingAddress ?? null,
+    status: 'pending',
+    payment_status: 'pending',
+  }).select('id').single()
+
+  if (!data) {
+    console.error('[ORDER] createOrder error:', error)
+    return { ok: false, error: error?.message ?? 'Error al crear el pedido' }
+  }
+
+  await sb.from('order_events').insert({
+    order_id: data.id,
+    type: 'created',
+    actor: 'customer',
+    metadata: { customer_id: input.customerId, source: 'whatsapp' },
+  })
+
+  return {
+    ok: true,
+    orderId: data.id,
+    orderNumber: data.id.slice(0, 8),
+    total: input.totalPrice,
+  }
+}
+
 // ── Pure validation ──────────────────────────────────────────
 
 const EDITABLE_STATUSES = new Set(['pending', 'confirmed', 'paid', 'preparing'])
