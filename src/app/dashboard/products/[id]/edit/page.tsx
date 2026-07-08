@@ -11,6 +11,7 @@ const CATEGORIES = [
   { value: 'pared', label: 'Pared' },
   { value: 'bano', label: 'Baño' },
   { value: 'exterior', label: 'Exterior' },
+  { value: 'griferia', label: 'Grifería' },
   { value: 'pegamento', label: 'Pegamento' },
   { value: 'pastina', label: 'Pastina' },
 ]

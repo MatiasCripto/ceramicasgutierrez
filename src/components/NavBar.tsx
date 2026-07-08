@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react'
 const links = [
   { label: 'Pisos', href: '/pisos' },
   { label: 'Revestimientos', href: '/revestimientos' },
+  { label: 'Griferías', href: '/griferias' },
   { label: 'Promociones', href: '/promociones' },
   { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },

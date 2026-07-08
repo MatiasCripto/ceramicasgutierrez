@@ -172,7 +172,7 @@ export default async function BundlesSection() {
 
                   {/* WhatsApp CTA */}
                   <a
-                    href={`https://wa.me/549XXXXXXXXX?text=${whatsappMessage}`}
+                    href={`https://wa.me/5491158885972?text=${whatsappMessage}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-charcoal-soft/20 text-charcoal-soft text-xs tracking-[0.1em] uppercase font-light rounded-sm hover:bg-charcoal-soft hover:text-warm-ivory transition-all duration-500 group/btn w-full sm:w-auto"

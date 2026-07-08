@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-const WHATSAPP_URL = 'https://wa.me/549XXXXXXXXX'
+const WHATSAPP_URL = 'https://wa.me/5491158885972'
 
 export default function FloatingWhatsApp() {
   return (
