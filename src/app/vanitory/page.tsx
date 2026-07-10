@@ -63,7 +63,7 @@ export default function VanitoryPage() {
       {/* Header */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1600566753151-3844290634d3?w=1600&q=80"
+          src="/vanitorys.png"
           alt="Vanitorys de diseño"
           className="w-full h-full object-cover"
         />

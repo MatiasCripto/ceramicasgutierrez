@@ -275,7 +275,7 @@ export default async function LandingPage() {
         <a href="/vanitory" className="block w-full h-full group">
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1600566753151-3844290634d3?w=1600&q=80"
+              src="/vanitorys.png"
               alt="Vanitorys de diseño"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
