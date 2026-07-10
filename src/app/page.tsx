@@ -270,6 +270,102 @@ export default async function LandingPage() {
         </a>
       </section>
 
+      {/* ===== VANITORY — BLOQUE PREMIUM ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="vanitory">
+        <a href="/vanitory" className="block w-full h-full group">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1600566753151-3844290634d3?w=1600&q=80"
+              alt="Vanitorys de diseño"
+              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+            <AnimatedSection>
+              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
+                Colección
+              </span>
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
+                Vanitorys
+              </h2>
+              <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
+                Muebles de diseño para tu baño
+              </p>
+
+              <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
+                <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
+                  Explorar colección
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </div>
+            </AnimatedSection>
+          </div>
+
+          <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
+            <div className="max-w-6xl mx-auto flex items-center gap-4">
+              <div className="h-[1px] flex-1 bg-white/15" />
+              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light whitespace-nowrap">
+                Cerámicas Gutiérrez
+              </span>
+              <div className="h-[1px] flex-1 bg-white/15" />
+            </div>
+          </div>
+        </a>
+      </section>
+
+      {/* ===== PULIDOS Y RECTIFICADOS — BLOQUE PREMIUM ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="pulidos">
+        <a href="/pulidos-y-rectificados" className="block w-full h-full group">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80"
+              alt="Porcelanatos pulidos y rectificados"
+              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+            <AnimatedSection>
+              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
+                Colección
+              </span>
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
+                Pulidos y Rectificados
+              </h2>
+              <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
+                Porcelanatos de gran formato para ambientes premium
+              </p>
+
+              <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
+                <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
+                  Explorar colección
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </div>
+            </AnimatedSection>
+          </div>
+
+          <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
+            <div className="max-w-6xl mx-auto flex items-center gap-4">
+              <div className="h-[1px] flex-1 bg-white/15" />
+              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light whitespace-nowrap">
+                Cerámicas Gutiérrez
+              </span>
+              <div className="h-[1px] flex-1 bg-white/15" />
+            </div>
+          </div>
+        </a>
+      </section>
+
       {/* ===== COMBOS ===== */}
       <BundlesSection />
 

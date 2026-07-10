@@ -7,6 +7,8 @@ const links = [
   { label: 'Pisos', href: '/pisos' },
   { label: 'Revestimientos', href: '/revestimientos' },
   { label: 'Griferías', href: '/griferias' },
+  { label: 'Vanitorys', href: '/vanitory' },
+  { label: 'Pulidos', href: '/pulidos-y-rectificados' },
   { label: 'Promociones', href: '/promociones' },
   { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },

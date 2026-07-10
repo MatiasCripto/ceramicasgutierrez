@@ -12,6 +12,8 @@ const CATEGORIES = [
   { value: 'bano', label: 'Baño' },
   { value: 'exterior', label: 'Exterior' },
   { value: 'griferia', label: 'Grifería' },
+  { value: 'vanitory', label: 'Vanitory' },
+  { value: 'pulido', label: 'Pulido y Rectificado' },
   { value: 'pegamento', label: 'Pegamento' },
   { value: 'pastina', label: 'Pastina' },
 ]

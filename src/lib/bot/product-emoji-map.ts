@@ -28,6 +28,9 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
   oferta: '🏷️',
   liquidación: '🏷️',
   liquidacion: '🏷️',
+  vanitory: '🚿',
+  pulido: '✨',
+  rectificado: '🔲',
 }
 
 const FINISH_EMOJI_MAP: Record<string, string> = {
