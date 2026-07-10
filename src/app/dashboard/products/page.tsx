@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/formatters'
+import DeleteProductButton from './DeleteProductButton'
 
 interface ProductRow {
   id: string
@@ -102,13 +103,16 @@ export default async function ProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/dashboard/products/${product.id}/edit`}
-                      className="text-sm font-medium transition-opacity hover:opacity-70"
-                      style={{ color: 'var(--brand)' }}
-                    >
-                      Editar
-                    </Link>
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/dashboard/products/${product.id}/edit`}
+                        className="text-sm font-medium transition-opacity hover:opacity-70"
+                        style={{ color: 'var(--brand)' }}
+                      >
+                        Editar
+                      </Link>
+                      <DeleteProductButton productId={product.id} productName={product.name} />
+                    </div>
                   </td>
                 </tr>
               ))}
