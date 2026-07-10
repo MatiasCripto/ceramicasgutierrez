@@ -323,7 +323,7 @@ export default async function LandingPage() {
         <a href="/pulidos-y-rectificados" className="block w-full h-full group">
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80"
+              src="/pulidos.png"
               alt="Porcelanatos pulidos y rectificados"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />

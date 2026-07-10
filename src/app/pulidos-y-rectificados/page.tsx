@@ -79,7 +79,7 @@ export default function PulidosPage() {
       {/* Header */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80"
+          src="/pulidos.png"
           alt="Porcelanatos pulidos y rectificados"
           className="w-full h-full object-cover"
         />
