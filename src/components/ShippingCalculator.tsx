@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils/formatters'
 
-const STORE_LAT = -34.864
-const STORE_LNG = -58.191
+const STORE_LAT = -34.862450
+const STORE_LNG = -58.185835
 const EARTH_RADIUS_KM = 6371
 const FREE_KM = 3
 const COST_PER_KM = 3000
