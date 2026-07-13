@@ -7,13 +7,14 @@ import { ArrowLeft, Upload, X } from 'lucide-react'
 import Link from 'next/link'
 
 const CATEGORIES = [
+  { value: 'simil_madera', label: 'Símil Madera' },
+  { value: 'pulido', label: 'Pulido y Rectificado' },
   { value: 'piso', label: 'Piso' },
   { value: 'pared', label: 'Pared' },
   { value: 'bano', label: 'Baño' },
   { value: 'exterior', label: 'Exterior' },
   { value: 'griferia', label: 'Grifería' },
   { value: 'vanitory', label: 'Vanitory' },
-  { value: 'pulido', label: 'Pulido y Rectificado' },
   { value: 'pegamento', label: 'Pegamento' },
   { value: 'pastina', label: 'Pastina' },
 ]

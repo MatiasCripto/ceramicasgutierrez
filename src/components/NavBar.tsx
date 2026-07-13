@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 
 const links = [
+  { label: 'Pulidos', href: '/pulidos-y-rectificados' },
+  { label: 'Símil Madera', href: '/simil-madera' },
   { label: 'Pisos', href: '/pisos' },
   { label: 'Revestimientos', href: '/revestimientos' },
   { label: 'Griferías', href: '/griferias' },
   { label: 'Vanitorys', href: '/vanitory' },
-  { label: 'Pulidos', href: '/pulidos-y-rectificados' },
   { label: 'Promociones', href: '/promociones' },
   { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },

@@ -31,6 +31,7 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
   vanitory: '🚿',
   pulido: '✨',
   rectificado: '🔲',
+  simil_madera: '🪵',
 }
 
 const FINISH_EMOJI_MAP: Record<string, string> = {

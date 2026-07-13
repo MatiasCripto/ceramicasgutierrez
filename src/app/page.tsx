@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import NavBar from '@/components/NavBar'
 import FloatingWhatsApp from '@/components/FloatingWhatsApp'
+import PromoBanner from '@/components/PromoBanner'
 import AnimatedSection from '@/components/AnimatedSection'
 import MetrosCalculator from '@/components/MetrosCalculator'
 import BundlesSection from '@/components/BundlesSection'
@@ -55,6 +56,7 @@ export default async function LandingPage() {
     <div className="min-h-screen">
       <NavBar />
       <FloatingWhatsApp />
+      <PromoBanner />
 
       {/* ===== HERO ===== */}
       <section className="relative h-screen w-full overflow-hidden">
@@ -111,22 +113,115 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ===== PISOS — BLOQUE PREMIUM ===== */}
-      <section className="relative h-screen w-full overflow-hidden" id="pisos">
-        <a href="/pisos" className="block w-full h-full group">
-          {/* Imagen de ambiente */}
+      {/* ===== PULIDOS Y RECTIFICADOS — BLOQUE PREMIUM ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="pulidos">
+        <a href="/pulidos-y-rectificados" className="block w-full h-full group">
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1600&q=80"
-              alt="Ambiente con pisos cerámicos"
+              src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200&q=80"
+              alt="Porcelanatos pulidos y rectificados de alta gama con acabado brilloso"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
           </div>
 
-          {/* Overlay degradado */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
 
-          {/* Contenido */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+            <AnimatedSection>
+              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
+                Colección
+              </span>
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
+                Pulidos y Rectificados
+              </h2>
+              <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
+                Porcelanatos de gran formato para ambientes premium
+              </p>
+
+              <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
+                <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
+                  Explorar colección
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </div>
+            </AnimatedSection>
+          </div>
+
+          <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
+            <div className="max-w-6xl mx-auto flex items-center gap-4">
+              <div className="h-[1px] flex-1 bg-white/15" />
+              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light whitespace-nowrap">
+                Cerámicas Gutiérrez
+              </span>
+              <div className="h-[1px] flex-1 bg-white/15" />
+            </div>
+          </div>
+        </a>
+      </section>
+
+      {/* ===== SÍMIL MADERA — BLOQUE PREMIUM ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="simil-madera">
+        <a href="/simil-madera" className="block w-full h-full group">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1581236984294-6b15294d08f9?w=1600&q=80"
+              alt="Piso de porcelanato símil madera con vetas naturales y juntas visibles, estilo moderno"
+              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+            <AnimatedSection>
+              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
+                Colección
+              </span>
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
+                Símil Madera
+              </h2>
+              <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
+                La calidez de la madera con la durabilidad del porcelanato
+              </p>
+
+              <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
+                <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
+                  Explorar colección
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </div>
+            </AnimatedSection>
+          </div>
+
+          <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
+            <div className="max-w-6xl mx-auto flex items-center gap-4">
+              <div className="h-[1px] flex-1 bg-white/15" />
+              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light whitespace-nowrap">
+                Cerámicas Gutiérrez
+              </span>
+              <div className="h-[1px] flex-1 bg-white/15" />
+            </div>
+          </div>
+        </a>
+      </section>
+
+      {/* ===== PISOS — BLOQUE PREMIUM ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="pisos">
+        <a href="/pisos" className="block w-full h-full group">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80"
+              alt="Cerámicos para piso en ambiente lujoso con luz natural"
+              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
+
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
             <AnimatedSection>
               <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
@@ -139,7 +234,6 @@ export default async function LandingPage() {
                 Superficies que definen el carácter de cada ambiente
               </p>
 
-              {/* Botón que aparece en hover */}
               <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
                 <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
                   Explorar colección
@@ -151,7 +245,6 @@ export default async function LandingPage() {
             </AnimatedSection>
           </div>
 
-          {/* Línea decorativa inferior */}
           <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
             <div className="max-w-6xl mx-auto flex items-center gap-4">
               <div className="h-[1px] flex-1 bg-white/15" />
@@ -167,19 +260,16 @@ export default async function LandingPage() {
       {/* ===== REVESTIMIENTOS — BLOQUE PREMIUM ===== */}
       <section className="relative h-screen w-full overflow-hidden" id="revestimientos">
         <a href="/revestimientos" className="block w-full h-full group">
-          {/* Imagen de ambiente */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1600&q=80"
-              alt="Ambiente con revestimientos cerámicos"
+              src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&q=80"
+              alt="Revestimiento de paredes con porcelanatos en ambiente elegante"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
           </div>
 
-          {/* Overlay degradado */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
 
-          {/* Contenido */}
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
             <AnimatedSection>
               <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
@@ -192,7 +282,6 @@ export default async function LandingPage() {
                 Texturas y acabados que transforman paredes en experiencias
               </p>
 
-              {/* Botón que aparece en hover */}
               <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
                 <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
                   Explorar colección
@@ -204,7 +293,6 @@ export default async function LandingPage() {
             </AnimatedSection>
           </div>
 
-          {/* Línea decorativa inferior */}
           <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
             <div className="max-w-6xl mx-auto flex items-center gap-4">
               <div className="h-[1px] flex-1 bg-white/15" />
@@ -220,19 +308,16 @@ export default async function LandingPage() {
       {/* ===== GRIFERÍAS — BLOQUE PREMIUM ===== */}
       <section className="relative h-screen w-full overflow-hidden" id="griferias">
         <a href="/griferias" className="block w-full h-full group">
-          {/* Imagen de ambiente */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1600&q=80"
-              alt="Ambiente con grifería de diseño"
+              alt="Grifería de diseño en baño moderno con acabados premium"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
           </div>
 
-          {/* Overlay degradado */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
 
-          {/* Contenido */}
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
             <AnimatedSection>
               <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
@@ -245,7 +330,6 @@ export default async function LandingPage() {
                 Diseño y funcionalidad para cada espacio
               </p>
 
-              {/* Botón que aparece en hover */}
               <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
                 <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
                   Explorar colección
@@ -257,7 +341,6 @@ export default async function LandingPage() {
             </AnimatedSection>
           </div>
 
-          {/* Línea decorativa inferior */}
           <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
             <div className="max-w-6xl mx-auto flex items-center gap-4">
               <div className="h-[1px] flex-1 bg-white/15" />
@@ -276,7 +359,7 @@ export default async function LandingPage() {
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
               src="/vanitorys.png"
-              alt="Vanitorys de diseño"
+              alt="Vanitorys de diseño para baño moderno"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
           </div>
@@ -293,54 +376,6 @@ export default async function LandingPage() {
               </h2>
               <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
                 Muebles de diseño para tu baño
-              </p>
-
-              <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
-                <span className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/40 text-white text-sm tracking-[0.12em] uppercase font-light rounded-full hover:bg-white hover:text-charcoal-soft transition-all duration-500">
-                  Explorar colección
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </span>
-              </div>
-            </AnimatedSection>
-          </div>
-
-          <div className="absolute bottom-12 left-0 right-0 px-6 z-10">
-            <div className="max-w-6xl mx-auto flex items-center gap-4">
-              <div className="h-[1px] flex-1 bg-white/15" />
-              <span className="text-[10px] tracking-[0.2em] uppercase text-white/30 font-light whitespace-nowrap">
-                Cerámicas Gutiérrez
-              </span>
-              <div className="h-[1px] flex-1 bg-white/15" />
-            </div>
-          </div>
-        </a>
-      </section>
-
-      {/* ===== PULIDOS Y RECTIFICADOS — BLOQUE PREMIUM ===== */}
-      <section className="relative h-screen w-full overflow-hidden" id="pulidos">
-        <a href="/pulidos-y-rectificados" className="block w-full h-full group">
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <img
-              src="/pulidos.png"
-              alt="Porcelanatos pulidos y rectificados"
-              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
-            />
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
-            <AnimatedSection>
-              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
-                Colección
-              </span>
-              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
-                Pulidos y Rectificados
-              </h2>
-              <p className="text-white/50 text-xs sm:text-sm md:text-base font-light tracking-[0.05em] text-center max-w-md mx-auto mb-8 md:mb-10">
-                Porcelanatos de gran formato para ambientes premium
               </p>
 
               <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700 ease-out">
@@ -451,6 +486,31 @@ export default async function LandingPage() {
       {/* ===== FOOTER ===== */}
       <footer className="py-10 px-6 bg-charcoal-soft">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.instagram.com/ceramicas.gutierrez"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram de Cerámicas Gutiérrez"
+              className="text-stone-gray/50 hover:text-[#F5C200] transition-colors duration-300"
+            >
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+            </a>
+            <a
+              href="https://www.facebook.com/ceramicasgutierrez"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook de Cerámicas Gutiérrez"
+              className="text-stone-gray/50 hover:text-[#F5C200] transition-colors duration-300"
+            >
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+            </a>
+          </div>
+          <div className="h-4 w-[1px] bg-stone-gray/20 hidden md:block" />
           <p className="text-xs text-stone-gray/60 tracking-[0.05em] font-light text-center">
             &copy; {new Date().getFullYear()} Cerámicas Gutiérrez — Gutiérrez, Berazategui
           </p>

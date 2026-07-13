@@ -22,10 +22,10 @@ interface Product {
   attributes: string[] | null
 }
 
-const SIZES = ['Todas', '60x120', '90x180', '120x240', '120x260']
-const COLORS = ['Todos', 'Gris', 'Blanco', 'Beige', 'Negro', 'Marrón']
-const FINISHES = ['Todos', 'Pulido', 'Rectificado', 'Mate', 'Brillante']
-const USE_TAGS = ['Interior', 'Living', 'Cocina', 'Alto tránsito']
+const SIZES = ['Todas', '30x30', '33x33', '35x60', '45x45', '50x50', '60x60', '75x75', '90x90']
+const COLORS = ['Todos', 'Gris', 'Beige', 'Blanco', 'Marrón', 'Negro', 'Crema']
+const FINISHES = ['Todos', 'Mate', 'Brillante', 'Rectificado']
+const USE_TAGS = ['Interior', 'Exterior', 'Alto tránsito']
 
 export default function PulidosPage() {
   const supabase = createClient()
@@ -51,15 +51,23 @@ export default function PulidosPage() {
   }, [])
 
   const filtered = products.filter(p => {
-    if (selectedSize !== 'Todas' && p.size !== selectedSize) return false
-    if (selectedColor !== 'Todos' && p.color?.toLowerCase() !== selectedColor.toLowerCase()) return false
-    if (selectedFinish !== 'Todos' && p.finish?.toLowerCase() !== selectedFinish.toLowerCase()) return false
+    if (selectedSize !== 'Todas' && p.size?.trim() !== selectedSize) return false
+    if (selectedColor !== 'Todos' && p.color?.trim().toLowerCase() !== selectedColor.toLowerCase()) return false
+    if (selectedFinish !== 'Todos' && p.finish?.trim().toLowerCase() !== selectedFinish.toLowerCase()) return false
     if (selectedTags.length > 0) {
       const attrs = p.attributes ?? []
-      const attrSet = new Set(attrs.map(a => a.toLowerCase()))
+      const searchable = [
+        ...attrs.map(a => a.toLowerCase().trim()),
+        (p.category ?? '').toLowerCase().trim(),
+        p.name.toLowerCase(),
+        (p.description ?? '').toLowerCase().trim(),
+      ]
       const matchesTag = selectedTags.some(tag => {
-        const lower = tag.toLowerCase().replace(/\s+/g, '_')
-        return attrSet.has(lower.replace(/\s+/g, '_')) || attrSet.has(tag.toLowerCase())
+        const lower = tag.toLowerCase().trim()
+        return searchable.some(s =>
+          s.includes(lower) ||
+          s.replace(/\s+/g, '_') === lower.replace(/\s+/g, '_')
+        )
       })
       if (!matchesTag) return false
     }

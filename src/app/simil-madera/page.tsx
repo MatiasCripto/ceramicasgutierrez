@@ -27,7 +27,7 @@ const COLORS = ['Todos', 'Gris', 'Beige', 'Blanco', 'Marrón', 'Negro', 'Crema']
 const FINISHES = ['Todos', 'Mate', 'Brillante', 'Rectificado']
 const USE_TAGS = ['Interior', 'Exterior', 'Alto tránsito']
 
-export default function PisosPage() {
+export default function SimilMaderaPage() {
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,7 +41,7 @@ export default function PisosPage() {
     supabase
       .from('products')
       .select('id, name, description, category, size, color, finish, price_per_m2, m2_per_box, images, attributes')
-      .eq('category', 'piso')
+      .eq('category', 'simil_madera')
       .eq('active', true)
       .order('name')
       .then(({ data }) => {
@@ -88,8 +88,8 @@ export default function PisosPage() {
       {/* Header */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1600&q=80"
-          alt="Pisos cerámicos"
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80"
+          alt="Porcelanatos símil madera"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
@@ -97,7 +97,7 @@ export default function PisosPage() {
           <AnimatedSection>
             <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light block mb-3">Colección</span>
             <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white font-light tracking-[0.06em] uppercase">
-              Pisos
+              Símil Madera
             </h1>
           </AnimatedSection>
         </div>

@@ -22,23 +22,20 @@ interface Product {
   attributes: string[] | null
 }
 
-const AMBIENTES = ['Todos', 'Baño', 'Cocina', 'Living', 'Exterior']
-const VISUAL_CATEGORIES = ['Todas', 'Piedra', 'Mármol', 'Cemento', 'Madera']
-
-const CATEGORY_MAP: Record<string, string[]> = {
-  'Baño': ['bano'],
-  'Cocina': ['cocina'],
-  'Living': ['living'],
-  'Exterior': ['exterior'],
-}
+const SIZES = ['Todas', '30x30', '33x33', '35x60', '45x45', '50x50', '60x60', '75x75', '90x90']
+const COLORS = ['Todos', 'Gris', 'Beige', 'Blanco', 'Marrón', 'Negro', 'Crema']
+const FINISHES = ['Todos', 'Mate', 'Brillante', 'Rectificado']
+const USE_TAGS = ['Interior', 'Exterior', 'Alto tránsito']
 
 export default function RevestimientosPage() {
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [selectedAmbiente, setSelectedAmbiente] = useState('Todos')
-  const [selectedVisual, setSelectedVisual] = useState('Todas')
+  const [selectedSize, setSelectedSize] = useState('Todas')
+  const [selectedColor, setSelectedColor] = useState('Todos')
+  const [selectedFinish, setSelectedFinish] = useState('Todos')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   useEffect(() => {
     supabase
@@ -54,24 +51,34 @@ export default function RevestimientosPage() {
   }, [])
 
   const filtered = products.filter(p => {
-    if (selectedAmbiente !== 'Todos') {
-      const cats = CATEGORY_MAP[selectedAmbiente] ?? []
-      if (!cats.includes(p.category ?? '')) return false
-    }
-    if (selectedVisual !== 'Todas') {
+    if (selectedSize !== 'Todas' && p.size?.trim() !== selectedSize) return false
+    if (selectedColor !== 'Todos' && p.color?.trim().toLowerCase() !== selectedColor.toLowerCase()) return false
+    if (selectedFinish !== 'Todos' && p.finish?.trim().toLowerCase() !== selectedFinish.toLowerCase()) return false
+    if (selectedTags.length > 0) {
       const attrs = p.attributes ?? []
-      const attrSet = new Set(attrs.map(a => a.toLowerCase()))
-      const nameLower = p.name.toLowerCase()
-      const descLower = (p.description ?? '').toLowerCase()
-      const visualLower = selectedVisual.toLowerCase()
-      const matchesField =
-        attrSet.has(visualLower) ||
-        nameLower.includes(visualLower) ||
-        descLower.includes(visualLower)
-      if (!matchesField) return false
+      const searchable = [
+        ...attrs.map(a => a.toLowerCase().trim()),
+        (p.category ?? '').toLowerCase().trim(),
+        p.name.toLowerCase(),
+        (p.description ?? '').toLowerCase().trim(),
+      ]
+      const matchesTag = selectedTags.some(tag => {
+        const lower = tag.toLowerCase().trim()
+        return searchable.some(s =>
+          s.includes(lower) ||
+          s.replace(/\s+/g, '_') === lower.replace(/\s+/g, '_')
+        )
+      })
+      if (!matchesTag) return false
     }
     return true
   })
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    )
+  }
 
   return (
     <div className="min-h-screen bg-warm-ivory">
@@ -100,38 +107,73 @@ export default function RevestimientosPage() {
       <section className="sticky top-0 z-20 bg-warm-ivory/95 backdrop-blur-sm border-b border-charcoal-soft/5">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-xs tracking-[0.08em] uppercase">
-            {/* Ambiente */}
+            {/* Medidas */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-stone-gray/60 mr-1">Ambiente</span>
-              {AMBIENTES.map(a => (
+              <span className="text-stone-gray/60 mr-1">Medidas</span>
+              {SIZES.map(s => (
                 <button
-                  key={a}
-                  onClick={() => setSelectedAmbiente(a)}
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
                   className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
-                    selectedAmbiente === a
+                    selectedSize === s
                       ? 'bg-charcoal-soft text-warm-ivory'
                       : 'text-stone-gray/70 hover:text-charcoal-soft hover:bg-charcoal-soft/5'
                   }`}
                 >
-                  {a}
+                  {s}
                 </button>
               ))}
             </div>
 
-            {/* Categoría visual */}
+            {/* Color */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-stone-gray/60 mr-1">Categoría</span>
-              {VISUAL_CATEGORIES.map(vc => (
+              <span className="text-stone-gray/60 mr-1">Color</span>
+              {COLORS.map(c => (
                 <button
-                  key={vc}
-                  onClick={() => setSelectedVisual(vc)}
+                  key={c}
+                  onClick={() => setSelectedColor(c)}
                   className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
-                    selectedVisual === vc
+                    selectedColor === c
                       ? 'bg-charcoal-soft text-warm-ivory'
                       : 'text-stone-gray/70 hover:text-charcoal-soft hover:bg-charcoal-soft/5'
                   }`}
                 >
-                  {vc}
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {/* Acabado */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-stone-gray/60 mr-1">Acabado</span>
+              {FINISHES.map(f => (
+                <button
+                  key={f}
+                  onClick={() => setSelectedFinish(f)}
+                  className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
+                    selectedFinish === f
+                      ? 'bg-charcoal-soft text-warm-ivory'
+                      : 'text-stone-gray/70 hover:text-charcoal-soft hover:bg-charcoal-soft/5'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {/* Tags */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {USE_TAGS.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  className={`px-3 py-1.5 rounded-full border transition-all duration-300 ${
+                    selectedTags.includes(tag)
+                      ? 'bg-charcoal-soft text-warm-ivory border-charcoal-soft'
+                      : 'text-stone-gray/70 border-stone-gray/20 hover:border-charcoal-soft/30 hover:text-charcoal-soft'
+                  }`}
+                >
+                  {tag}
                 </button>
               ))}
             </div>
