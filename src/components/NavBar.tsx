@@ -43,12 +43,15 @@ export default function NavBar() {
         </a>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div
+          className="hidden md:flex items-center gap-2 xl:gap-4 overflow-x-auto nav-desktop-scroll"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={`text-sm tracking-[0.08em] uppercase font-light transition-colors duration-300 whitespace-nowrap ${
+              className={`text-sm tracking-[0.08em] uppercase font-light transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                 scrolled ? 'text-stone-gray hover:text-charcoal-soft' : 'text-stone-gray/80 hover:text-white'
               }`}
             >
@@ -56,6 +59,7 @@ export default function NavBar() {
             </a>
           ))}
         </div>
+        <style>{`.nav-desktop-scroll::-webkit-scrollbar { display: none }`}</style>
 
         {/* Mobile hamburger */}
         <button
