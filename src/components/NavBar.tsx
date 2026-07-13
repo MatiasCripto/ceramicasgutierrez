@@ -44,14 +44,14 @@ export default function NavBar() {
 
         {/* Desktop nav */}
         <div
-          className="hidden md:flex items-center gap-2 xl:gap-4 overflow-x-auto nav-desktop-scroll"
+          className="hidden md:flex items-center gap-1 lg:gap-2 overflow-x-auto nav-desktop-scroll"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={`text-sm tracking-[0.08em] uppercase font-light transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
+              className={`text-xs lg:text-sm tracking-[0.04em] lg:tracking-[0.06em] uppercase font-light transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                 scrolled ? 'text-stone-gray hover:text-charcoal-soft' : 'text-stone-gray/80 hover:text-white'
               }`}
             >
