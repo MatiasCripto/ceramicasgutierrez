@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavBar from '@/components/NavBar'
 import FloatingWhatsApp from '@/components/FloatingWhatsApp'
 import AnimatedSection from '@/components/AnimatedSection'
+import ShippingCalculator from '@/components/ShippingCalculator'
 import { formatCurrency } from '@/lib/utils/formatters'
 import { ArrowLeft, WhatsappIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -48,6 +49,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
+  const [shippingInfo, setShippingInfo] = useState<{ address: string; cost: number | null; isFree: boolean } | null>(null)
 
   useEffect(() => {
     if (!params.id) return
@@ -93,9 +95,14 @@ export default function ProductDetailPage() {
   const categoryLabel = CATEGORY_LABELS[product.category ?? ''] ?? product.category
   const hasPricing = product.price_per_m2 != null || product.price_per_unit != null
 
-  const whatsappMessage = encodeURIComponent(
-    `Hola! Quería consultar sobre ${product.name}${product.size ? ` (${product.size})` : ''}`
-  )
+  const whatsappMessage = useMemo(() => {
+    const base = `Hola! Quería consultar sobre ${product.name}${product.size ? ` (${product.size})` : ''}`
+    if (!shippingInfo) return encodeURIComponent(base)
+    const shippingPart = shippingInfo.isFree
+      ? `\n\nDirección de entrega: ${shippingInfo.address}. Costo de envío calculado: Envío gratis`
+      : `\n\nDirección de entrega: ${shippingInfo.address}. Costo de envío calculado: ${formatCurrency(shippingInfo.cost!)}`
+    return encodeURIComponent(base + shippingPart)
+  }, [product, shippingInfo])
 
   return (
     <div className="min-h-screen bg-warm-ivory">
@@ -247,6 +254,9 @@ export default function ProductDetailPage() {
                 </svg>
                 Consultar por WhatsApp
               </a>
+
+              {/* Shipping Calculator */}
+              <ShippingCalculator onShippingCalculated={setShippingInfo} />
 
               {/* Nota de precio */}
               {!hasPricing && (

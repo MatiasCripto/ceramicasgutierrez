@@ -7,6 +7,7 @@ import MetrosCalculator from '@/components/MetrosCalculator'
 import BundlesSection from '@/components/BundlesSection'
 import LocationSectionLoader from '@/components/LocationSectionLoader'
 import ScrollStory from '@/components/ScrollStory'
+import ShippingCalculator from '@/components/ShippingCalculator'
 import ScrollIndicator from '@/components/ScrollIndicator'
 import ValueIcon from '@/components/ValueIcon'
 import { formatCurrency } from '@/lib/utils/formatters'
@@ -481,6 +482,23 @@ export default async function LandingPage() {
             Conversemos
           </a>
         </AnimatedSection>
+      </section>
+
+      {/* ===== SHIPPING CALCULATOR ===== */}
+      <section className="py-20 px-6 bg-gradient-to-b from-sand-beige/20 to-warm-ivory" id="shipping">
+        <div className="max-w-lg mx-auto">
+          <AnimatedSection>
+            <div className="text-center mb-8">
+              <h2 className="font-serif text-3xl md:text-4xl text-charcoal-soft tracking-[0.03em] mb-3">
+                ¿Llegamos a tu zona?
+              </h2>
+              <p className="text-stone-gray text-sm font-light max-w-sm mx-auto leading-relaxed">
+                Ingresá tu dirección y te decimos al instante si tenés envío gratis o cuánto sale.
+              </p>
+            </div>
+            <ShippingCalculator />
+          </AnimatedSection>
+        </div>
       </section>
 
       {/* ===== FOOTER ===== */}
