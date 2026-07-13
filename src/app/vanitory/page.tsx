@@ -6,6 +6,7 @@ import NavBar from '@/components/NavBar'
 import FloatingWhatsApp from '@/components/FloatingWhatsApp'
 import AnimatedSection from '@/components/AnimatedSection'
 import { formatCurrency } from '@/lib/utils/formatters'
+import Link from 'next/link'
 
 interface Product {
   id: string
@@ -154,7 +155,8 @@ export default function VanitoryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14">
               {filtered.map((product, index) => (
                 <AnimatedSection key={product.id} delay={index * 0.1}>
-                  <article className="group cursor-pointer">
+                  <Link href={`/productos/${product.id}`}>
+                    <article className="group cursor-pointer">
                     <div className="aspect-[4/5] overflow-hidden bg-sand-beige/30 relative">
                       {product.images?.[0] ? (
                         <img
@@ -193,7 +195,8 @@ export default function VanitoryPage() {
                       </button>
                     </div>
                   </article>
-                </AnimatedSection>
+                </Link>
+              </AnimatedSection>
               ))}
             </div>
           )}
