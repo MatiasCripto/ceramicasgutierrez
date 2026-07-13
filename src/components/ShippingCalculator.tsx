@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils/formatters'
 
-const STORE_LAT = -34.7889
-const STORE_LNG = -58.2756
+const STORE_LAT = -34.864
+const STORE_LNG = -58.191
 const EARTH_RADIUS_KM = 6371
 const FREE_KM = 3
 const COST_PER_KM = 3000
@@ -48,23 +48,20 @@ export default function ShippingCalculator({ cartTotal, onShippingCalculated }: 
     setResult(null)
 
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(trimmed)}&format=json&limit=1&countrycodes=ar`,
-        { headers: { 'User-Agent': 'CeramicasGutierrez/1.0' } }
-      )
+      const param = encodeURIComponent(trimmed)
+      const res = await fetch(`/api/geocode?q=${param}`)
       if (!res.ok) {
-        setError('No pudimos encontrar esa dirección. Probá con más detalles (calle, ciudad, provincia).')
+        const msg = await res.json().catch(() => ({}))
+        if (res.status === 404) {
+          setError('No encontramos esa dirección. Probá incluyendo la localidad.')
+        } else {
+          setError('No pudimos encontrar esa dirección. Probá con más detalles (calle, ciudad, provincia).')
+        }
         return
       }
 
       const data = await res.json()
-      if (!data?.[0]) {
-        setError('No encontramos esa dirección. Probá incluyendo la localidad.')
-        return
-      }
-
-      const lat = parseFloat(data[0].lat)
-      const lng = parseFloat(data[0].lon)
+      const { lat, lng } = data
       const distance = haversineKm(STORE_LAT, STORE_LNG, lat, lng)
 
       let isFree: boolean
