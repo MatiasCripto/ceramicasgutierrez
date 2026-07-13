@@ -118,7 +118,7 @@ export default async function LandingPage() {
         <a href="/pulidos-y-rectificados" className="block w-full h-full group">
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1200&q=80"
+              src="/pulidosrec.png"
               alt="Porcelanatos pulidos y rectificados de alto brillo en ambiente lujoso"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
@@ -262,7 +262,7 @@ export default async function LandingPage() {
         <a href="/revestimientos" className="block w-full h-full group">
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200&q=80"
+              src="/revestimiento.png"
               alt="Revestimiento de pared con porcelanatos en ambiente elegante con luz natural"
               className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
             />
