@@ -1,18 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 
-const links = [
-  { label: 'Pulidos', href: '/pulidos-y-rectificados' },
+const productLinks = [
+  { label: 'Pulidos y Rectificados', href: '/pulidos-y-rectificados' },
   { label: 'Símil Madera', href: '/simil-madera' },
   { label: 'Pisos', href: '/pisos' },
   { label: 'Revestimientos', href: '/revestimientos' },
   { label: 'Griferías', href: '/griferias' },
   { label: 'Vanitorys', href: '/vanitory' },
   { label: 'Sanitarios', href: '/sanitarios' },
+]
+
+const otherLinks = [
   { label: 'Promociones', href: '/promociones' },
-  { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },
   { label: 'Locales', href: '/#locales' },
   { label: 'Calculadora', href: '/#calculadora' },
@@ -22,12 +24,29 @@ const links = [
 export default function NavBar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const linkClass = (isScrolled: boolean) =>
+    `text-xs lg:text-sm tracking-[0.04em] lg:tracking-[0.06em] uppercase font-light transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
+      isScrolled ? 'text-stone-gray hover:text-charcoal-soft' : 'text-stone-gray/80 hover:text-white'
+    }`
 
   return (
     <nav
@@ -45,22 +64,43 @@ export default function NavBar() {
 
         {/* Desktop nav */}
         <div
-          className="hidden md:flex items-center gap-1 lg:gap-2 overflow-x-auto nav-desktop-scroll"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="hidden md:flex items-center gap-1 lg:gap-2"
         >
-          {links.map((link) => (
+          {/* Productos dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg ${linkClass(scrolled)}`}
+            >
+              Productos
+              <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-56 bg-warm-ivory/95 backdrop-blur-md border border-sand-beige/30 rounded-xl shadow-lg py-2 animate-fade-in">
+                {productLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2.5 text-sm tracking-[0.06em] uppercase font-light text-charcoal-soft hover:bg-charcoal-soft/5 transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {otherLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={`text-xs lg:text-sm tracking-[0.04em] lg:tracking-[0.06em] uppercase font-light transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
-                scrolled ? 'text-stone-gray hover:text-charcoal-soft' : 'text-stone-gray/80 hover:text-white'
-              }`}
+              className={linkClass(scrolled)}
             >
               {link.label}
             </a>
           ))}
         </div>
-        <style>{`.nav-desktop-scroll::-webkit-scrollbar { display: none }`}</style>
 
         {/* Mobile hamburger */}
         <button
@@ -76,7 +116,19 @@ export default function NavBar() {
       {menuOpen && (
         <div className="md:hidden bg-warm-ivory/95 backdrop-blur-md border-t border-sand-beige/30 shadow-lg">
           <div className="px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
-            {links.map((link) => (
+            <p className="px-3 py-2 text-[10px] tracking-[0.15em] uppercase text-stone-gray/40 font-semibold">Productos</p>
+            {productLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="block px-3 py-3 text-sm tracking-[0.08em] uppercase font-light text-charcoal-soft hover:text-stone-gray rounded-lg transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="h-[1px] bg-stone-gray/10 my-2" />
+            {otherLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
