@@ -402,6 +402,35 @@ export default async function LandingPage() {
         </a>
       </section>
 
+      {/* ===== STOCK PERMANENTE ===== */}
+      <section className="relative h-screen w-full overflow-hidden" id="stock">
+        <a href="/productos" className="block w-full h-full group">
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img
+              src="/stock.png"
+              alt="Stock permanente"
+              className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-105"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10 transition-all duration-700 group-hover:from-black/80 group-hover:via-black/40" />
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+            <AnimatedSection>
+              <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light mb-6 block text-center">
+                Disponibilidad
+              </span>
+              <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light tracking-[0.06em] uppercase text-center mb-3 md:mb-4">
+                Stock Permanente
+              </h2>
+              <p className="text-white/60 text-sm md:text-base font-light max-w-lg mx-auto text-center leading-relaxed">
+                Todos nuestros productos cuentan con stock disponible. Lo que ves en la web está listo para retirar o recibir en tu domicilio.
+              </p>
+            </AnimatedSection>
+          </div>
+        </a>
+      </section>
+
       {/* ===== COMBOS ===== */}
       <BundlesSection />
 

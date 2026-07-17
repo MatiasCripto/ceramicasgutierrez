@@ -90,7 +90,7 @@ export default function SanitariosPage() {
       {/* Header */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1600566753376-12c8ab7c5a0c?w=1600&q=80"
+          src="/sanitarios.png"
           alt="Sanitarios"
           className="w-full h-full object-cover"
         />
