@@ -199,14 +199,16 @@ export default function NewProductPage() {
 
         {/* Precios */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio por m² ($)</label>
-            <input type="number" min={0} step="0.01" value={form.price_per_m2}
-              onChange={e => setForm(f => ({ ...f, price_per_m2: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
-              style={{borderColor: 'var(--dash-input-border)'}}
-            />
-          </div>
+          {!['griferia', 'vanitory', 'sanitario'].includes(form.category) && (
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio por m² ($)</label>
+              <input type="number" min={0} step="0.01" value={form.price_per_m2}
+                onChange={e => setForm(f => ({ ...f, price_per_m2: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                style={{borderColor: 'var(--dash-input-border)'}}
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Precio por unidad ($)</label>
             <input type="number" min={0} step="0.01" value={form.price_per_unit}
@@ -219,22 +221,26 @@ export default function NewProductPage() {
 
         {/* m² por caja + Stock */}
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>m² por caja</label>
-            <input type="number" min={0} step="0.01" value={form.m2_per_box}
-              onChange={e => setForm(f => ({ ...f, m2_per_box: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
-              style={{borderColor: 'var(--dash-input-border)'}}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Stock (m²)</label>
-            <input type="number" min={0} step="0.01" value={form.stock_m2}
-              onChange={e => setForm(f => ({ ...f, stock_m2: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
-              style={{borderColor: 'var(--dash-input-border)'}}
-            />
-          </div>
+          {!['griferia', 'vanitory', 'sanitario'].includes(form.category) && (
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>m² por caja</label>
+              <input type="number" min={0} step="0.01" value={form.m2_per_box}
+                onChange={e => setForm(f => ({ ...f, m2_per_box: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                style={{borderColor: 'var(--dash-input-border)'}}
+              />
+            </div>
+          )}
+          {!['griferia', 'vanitory', 'sanitario'].includes(form.category) ? (
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Stock (m²)</label>
+              <input type="number" min={0} step="0.01" value={form.stock_m2}
+                onChange={e => setForm(f => ({ ...f, stock_m2: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                style={{borderColor: 'var(--dash-input-border)'}}
+              />
+            </div>
+          ) : null}
           <div>
             <label className="block text-sm font-medium mb-1" style={{color: 'var(--dash-text-primary)'}}>Stock (unidades)</label>
             <input type="number" min={0} step="1" value={form.stock_units}

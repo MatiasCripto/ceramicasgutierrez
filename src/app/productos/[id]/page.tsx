@@ -101,6 +101,7 @@ export default function ProductDetailPage() {
   }
 
   const categoryLabel = CATEGORY_LABELS[product.category ?? ''] ?? product.category
+  const isUnitCategory = ['griferia', 'vanitory', 'sanitario'].includes(product.category ?? '')
   const hasPricing = product.price_per_m2 != null || product.price_per_unit != null
 
   const baseMsg = `Hola! Quería consultar sobre ${product.name}${product.size ? ` (${product.size})` : ''}`
@@ -224,7 +225,7 @@ export default function ProductDetailPage() {
 
               {/* Pricing */}
               <div className="space-y-2">
-                {product.price_per_m2 != null && (
+                {!isUnitCategory && product.price_per_m2 != null && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-stone-gray/60">Precio por m²</span>
                     <span className="text-xl font-medium text-charcoal-soft">{formatCurrency(product.price_per_m2)}</span>
@@ -236,13 +237,19 @@ export default function ProductDetailPage() {
                     <span className="text-xl font-medium text-charcoal-soft">{formatCurrency(product.price_per_unit)}</span>
                   </div>
                 )}
-                {product.m2_per_box != null && (
+                {!isUnitCategory && product.m2_per_box != null && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-stone-gray/60">m² por caja</span>
                     <span className="text-sm text-charcoal-soft">{product.m2_per_box} m²</span>
                   </div>
                 )}
-                {product.stock_m2 != null && (
+                {isUnitCategory && product.stock_units != null && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-stone-gray/60">Stock disponible</span>
+                    <span className="text-sm text-charcoal-soft">{product.stock_units} unidades</span>
+                  </div>
+                )}
+                {!isUnitCategory && product.stock_m2 != null && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-stone-gray/60">Stock disponible</span>
                     <span className="text-sm text-charcoal-soft">{product.stock_m2} m²</span>
