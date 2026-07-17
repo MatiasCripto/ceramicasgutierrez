@@ -57,12 +57,13 @@ export default function ProductDetailPage() {
     if (!params.id) return
     supabase
       .from('products')
-      .select('*')
+      .select('id, name, description, category, size, color, finish, brand, price_per_m2, price_per_unit, m2_per_box, stock_m2, stock_units, images, attributes')
       .eq('id', params.id as string)
       .eq('active', true)
       .single()
       .then(({ data, error }) => {
         if (error) {
+          console.error('Product query error:', error)
           setProduct(null)
           setLoading(false)
           return
