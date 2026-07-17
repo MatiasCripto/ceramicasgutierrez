@@ -19,18 +19,17 @@ interface Product {
   price_per_m2: number | null
   price_per_unit: number | null
   m2_per_box: number | null
-  stock_m2: number | null
   stock_units: number | null
   images: string[]
   attributes: string[] | null
 }
 
-const SIZES = ['Todas', '1/2"', '3/4"', '1"']
-const COLORS = ['Todos', 'Cromo', 'Negro', 'Blanco', 'Dorado', 'Bronce', 'Gris']
-const FINISHES = ['Todos', 'Mate', 'Brillante']
-const USE_TAGS = ['Interior', 'Exterior', 'Cocina', 'Baño']
+const SIZES = ['Todas', '30x30', '33x33', '35x60', '45x45', '50x50', '60x60', '75x75', '90x90']
+const COLORS = ['Todos', 'Gris', 'Beige', 'Blanco', 'Marrón', 'Negro', 'Crema']
+const FINISHES = ['Todos', 'Mate', 'Brillante', 'Rectificado']
+const USE_TAGS = ['Interior', 'Exterior', 'Alto tránsito']
 
-export default function GriferiasPage() {
+export default function SanitariosPage() {
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,8 +42,8 @@ export default function GriferiasPage() {
   useEffect(() => {
     supabase
       .from('products')
-      .select('id, name, description, category, size, color, finish, price_per_m2, price_per_unit, m2_per_box, stock_m2, stock_units, images, attributes')
-      .eq('category', 'griferia')
+      .select('id, name, description, category, size, color, finish, price_per_m2, price_per_unit, m2_per_box, stock_units, images, attributes')
+      .eq('category', 'sanitario')
       .eq('active', true)
       .order('name')
       .then(({ data }) => {
@@ -54,15 +53,23 @@ export default function GriferiasPage() {
   }, [])
 
   const filtered = products.filter(p => {
-    if (selectedSize !== 'Todas' && p.size !== selectedSize) return false
-    if (selectedColor !== 'Todos' && p.color?.toLowerCase() !== selectedColor.toLowerCase()) return false
-    if (selectedFinish !== 'Todos' && p.finish?.toLowerCase() !== selectedFinish.toLowerCase()) return false
+    if (selectedSize !== 'Todas' && p.size?.trim() !== selectedSize) return false
+    if (selectedColor !== 'Todos' && p.color?.trim().toLocaleLowerCase() !== selectedColor.toLocaleLowerCase()) return false
+    if (selectedFinish !== 'Todos' && p.finish?.trim().toLocaleLowerCase() !== selectedFinish.toLocaleLowerCase()) return false
     if (selectedTags.length > 0) {
       const attrs = p.attributes ?? []
-      const attrSet = new Set(attrs.map(a => a.toLowerCase()))
+      const searchable = [
+        ...attrs.map(a => a.toLocaleLowerCase().trim()),
+        (p.category ?? '').toLocaleLowerCase().trim(),
+        p.name.toLocaleLowerCase(),
+        (p.description ?? '').toLocaleLowerCase().trim(),
+      ]
       const matchesTag = selectedTags.some(tag => {
-        const lower = tag.toLowerCase().replace(/\s+/g, '_')
-        return attrSet.has(lower.replace(/\s+/g, '_')) || attrSet.has(tag.toLowerCase())
+        const lower = tag.toLocaleLowerCase().trim()
+        return searchable.some(s =>
+          s.includes(lower) ||
+          s.replace(/\s+/g, '_') === lower.replace(/\s+/g, '_')
+        )
       })
       if (!matchesTag) return false
     }
@@ -83,8 +90,8 @@ export default function GriferiasPage() {
       {/* Header */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1600&q=80"
-          alt="Griferías de diseño"
+          src="/sanitarios.png"
+          alt="Sanitarios"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
@@ -92,7 +99,7 @@ export default function GriferiasPage() {
           <AnimatedSection>
             <span className="text-white/40 text-xs tracking-[0.2em] uppercase font-light block mb-3">Colección</span>
             <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-white font-light tracking-[0.06em] uppercase">
-              Griferías
+              Sanitarios
             </h1>
           </AnimatedSection>
         </div>
@@ -223,7 +230,7 @@ export default function GriferiasPage() {
                         {product.price_per_unit
                           ? `${formatCurrency(product.price_per_unit)} / unidad`
                           : product.price_per_m2
-                          ? `${formatCurrency(product.price_per_m2)}`
+                          ? `${formatCurrency(product.price_per_m2)} / m²`
                           : 'Consultar precio'}
                       </p>
                       <button className="mt-3 text-xs tracking-[0.1em] uppercase text-stone-gray border-b border-stone-gray/30 pb-0.5 hover:text-charcoal-soft hover:border-charcoal-soft transition-all duration-300">

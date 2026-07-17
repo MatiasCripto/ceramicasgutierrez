@@ -39,6 +39,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   pulido: 'Pulido y Rectificado',
   pegamento: 'Pegamento',
   pastina: 'Pastina',
+  simil_madera: 'Símil Madera',
+  sanitario: 'Sanitarios',
 }
 
 const WHATSAPP_NUMBER = '5491158885972'
@@ -59,7 +61,12 @@ export default function ProductDetailPage() {
       .eq('id', params.id as string)
       .eq('active', true)
       .single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setProduct(null)
+          setLoading(false)
+          return
+        }
         setProduct(data as Product | null)
         setLoading(false)
       })

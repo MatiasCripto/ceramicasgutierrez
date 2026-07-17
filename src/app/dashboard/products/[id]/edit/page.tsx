@@ -7,6 +7,7 @@ import { ArrowLeft, Upload, X } from 'lucide-react'
 import Link from 'next/link'
 
 const CATEGORIES = [
+  { value: 'sanitario', label: 'Sanitarios' },
   { value: 'simil_madera', label: 'Símil Madera' },
   { value: 'pulido', label: 'Pulido y Rectificado' },
   { value: 'piso', label: 'Piso' },

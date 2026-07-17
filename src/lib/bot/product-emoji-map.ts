@@ -32,6 +32,7 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
   pulido: '✨',
   rectificado: '🔲',
   simil_madera: '🪵',
+  sanitario: '🚽',
 }
 
 const FINISH_EMOJI_MAP: Record<string, string> = {

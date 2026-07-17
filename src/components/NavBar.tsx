@@ -10,6 +10,7 @@ const links = [
   { label: 'Revestimientos', href: '/revestimientos' },
   { label: 'Griferías', href: '/griferias' },
   { label: 'Vanitorys', href: '/vanitory' },
+  { label: 'Sanitarios', href: '/sanitarios' },
   { label: 'Promociones', href: '/promociones' },
   { label: 'Colección', href: '/#coleccion' },
   { label: 'Confianza', href: '/#confianza' },
