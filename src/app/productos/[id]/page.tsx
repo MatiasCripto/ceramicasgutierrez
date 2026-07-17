@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavBar from '@/components/NavBar'
@@ -103,14 +103,15 @@ export default function ProductDetailPage() {
   const categoryLabel = CATEGORY_LABELS[product.category ?? ''] ?? product.category
   const hasPricing = product.price_per_m2 != null || product.price_per_unit != null
 
-  const whatsappMessage = useMemo(() => {
-    const base = `Hola! Quería consultar sobre ${product.name}${product.size ? ` (${product.size})` : ''}`
-    if (!shippingInfo) return encodeURIComponent(base)
-    const shippingPart = shippingInfo.isFree
-      ? `\n\nDirección de entrega: ${shippingInfo.address}. Costo de envío calculado: Envío gratis`
-      : `\n\nDirección de entrega: ${shippingInfo.address}. Costo de envío calculado: ${formatCurrency(shippingInfo.cost!)}`
-    return encodeURIComponent(base + shippingPart)
-  }, [product, shippingInfo])
+  const baseMsg = `Hola! Quería consultar sobre ${product.name}${product.size ? ` (${product.size})` : ''}`
+  const whatsappMessage = !shippingInfo
+    ? encodeURIComponent(baseMsg)
+    : encodeURIComponent(
+        baseMsg +
+          `\n\nDirección de entrega: ${shippingInfo.address}. Costo de envío calculado: ${
+            shippingInfo.isFree ? 'Envío gratis' : formatCurrency(shippingInfo.cost!)
+          }`
+      )
 
   return (
     <div className="min-h-screen bg-warm-ivory">
